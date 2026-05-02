@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "RAG Eval Dashboard"
+version = "1.0.0"
+id = "artifacts/rag-eval"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18221
+
+[services.development]
+run = "pnpm --filter @workspace/rag-eval run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rag-eval", "run", "build" ]
+publicDir = "artifacts/rag-eval/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18221"
+BASE_PATH = "/"

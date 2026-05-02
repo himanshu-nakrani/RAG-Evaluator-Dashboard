@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RAG Evaluation Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: documents
+    description: Document management
+  - name: question-sets
+    description: Question set management
+  - name: experiments
+    description: Experiment configuration
+  - name: eval-runs
+    description: Evaluation run management
+  - name: dashboard
+    description: Dashboard summaries
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,321 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List all uploaded documents
+      responses:
+        "200":
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Upload a new document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDocumentBody"
+      responses:
+        "201":
+          description: Document created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  /documents/{id}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Get a document by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+    delete:
+      operationId: deleteDocument
+      tags: [documents]
+      summary: Delete a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /question-sets:
+    get:
+      operationId: listQuestionSets
+      tags: [question-sets]
+      summary: List all question sets
+      responses:
+        "200":
+          description: List of question sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionSet"
+    post:
+      operationId: createQuestionSet
+      tags: [question-sets]
+      summary: Create a new question set
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionSetBody"
+      responses:
+        "201":
+          description: Question set created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionSet"
+
+  /question-sets/{id}:
+    get:
+      operationId: getQuestionSet
+      tags: [question-sets]
+      summary: Get a question set with its questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Question set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionSetDetail"
+    delete:
+      operationId: deleteQuestionSet
+      tags: [question-sets]
+      summary: Delete a question set
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /question-sets/{id}/questions:
+    post:
+      operationId: addQuestion
+      tags: [question-sets]
+      summary: Add a question to a question set
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionBody"
+      responses:
+        "201":
+          description: Question added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+
+  /experiments:
+    get:
+      operationId: listExperiments
+      tags: [experiments]
+      summary: List all experiments
+      responses:
+        "200":
+          description: List of experiments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Experiment"
+    post:
+      operationId: createExperiment
+      tags: [experiments]
+      summary: Create a new experiment configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExperimentBody"
+      responses:
+        "201":
+          description: Experiment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experiment"
+
+  /experiments/{id}:
+    get:
+      operationId: getExperiment
+      tags: [experiments]
+      summary: Get an experiment with its runs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Experiment detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperimentDetail"
+    delete:
+      operationId: deleteExperiment
+      tags: [experiments]
+      summary: Delete an experiment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /experiments/{id}/runs:
+    post:
+      operationId: createEvalRun
+      tags: [eval-runs]
+      summary: Trigger a new evaluation run for an experiment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEvalRunBody"
+      responses:
+        "201":
+          description: Eval run created and started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvalRun"
+
+  /eval-runs:
+    get:
+      operationId: listEvalRuns
+      tags: [eval-runs]
+      summary: List all evaluation runs
+      parameters:
+        - name: experimentId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of eval runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EvalRun"
+
+  /eval-runs/{id}:
+    get:
+      operationId: getEvalRun
+      tags: [eval-runs]
+      summary: Get eval run with detailed per-question results
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Eval run detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvalRunDetail"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get overall dashboard metrics summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /experiments/{id}/compare:
+    get:
+      operationId: compareExperimentRuns
+      tags: [experiments]
+      summary: Compare all runs within an experiment side by side
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Comparison data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperimentComparison"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +359,449 @@ components:
       required:
         - status
 
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        content:
+          type: string
+        sizeBytes:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - content
+        - sizeBytes
+        - createdAt
+
+    CreateDocumentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        content:
+          type: string
+      required:
+        - name
+        - content
+
+    QuestionSet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        questionCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - questionCount
+        - createdAt
+
+    QuestionSetDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - questions
+        - createdAt
+
+    CreateQuestionSetBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        questionSetId:
+          type: integer
+        text:
+          type: string
+        groundTruth:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - questionSetId
+        - text
+        - createdAt
+
+    CreateQuestionBody:
+      type: object
+      properties:
+        text:
+          type: string
+        groundTruth:
+          type: string
+      required:
+        - text
+
+    Experiment:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        chunkSize:
+          type: integer
+        chunkOverlap:
+          type: integer
+        embeddingModel:
+          type: string
+        retrieverType:
+          type: string
+        topK:
+          type: integer
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        runCount:
+          type: integer
+        bestFaithfulness:
+          type: number
+          nullable: true
+        bestContextRecall:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - chunkSize
+        - chunkOverlap
+        - embeddingModel
+        - retrieverType
+        - topK
+        - documentId
+        - questionSetId
+        - runCount
+        - createdAt
+
+    ExperimentDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        chunkSize:
+          type: integer
+        chunkOverlap:
+          type: integer
+        embeddingModel:
+          type: string
+        retrieverType:
+          type: string
+        topK:
+          type: integer
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvalRun"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - chunkSize
+        - chunkOverlap
+        - embeddingModel
+        - retrieverType
+        - topK
+        - documentId
+        - questionSetId
+        - runs
+        - createdAt
+
+    CreateExperimentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        chunkSize:
+          type: integer
+        chunkOverlap:
+          type: integer
+        embeddingModel:
+          type: string
+        retrieverType:
+          type: string
+        topK:
+          type: integer
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+      required:
+        - name
+        - chunkSize
+        - chunkOverlap
+        - embeddingModel
+        - retrieverType
+        - topK
+        - documentId
+        - questionSetId
+
+    EvalRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        experimentId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        avgFaithfulness:
+          type: number
+          nullable: true
+        avgContextRecall:
+          type: number
+          nullable: true
+        avgLatencyMs:
+          type: number
+          nullable: true
+        totalQuestions:
+          type: integer
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - experimentId
+        - status
+        - createdAt
+
+    CreateEvalRunBody:
+      type: object
+      properties:
+        questionSetId:
+          type: integer
+          nullable: true
+      required: []
+
+    EvalRunDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        experimentId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        avgFaithfulness:
+          type: number
+          nullable: true
+        avgContextRecall:
+          type: number
+          nullable: true
+        avgLatencyMs:
+          type: number
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvalResult"
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - experimentId
+        - status
+        - results
+        - createdAt
+
+    EvalResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        evalRunId:
+          type: integer
+        questionId:
+          type: integer
+        questionText:
+          type: string
+        retrievedContext:
+          type: string
+          nullable: true
+        generatedAnswer:
+          type: string
+          nullable: true
+        faithfulness:
+          type: number
+          nullable: true
+        contextRecall:
+          type: number
+          nullable: true
+        latencyMs:
+          type: number
+          nullable: true
+      required:
+        - id
+        - evalRunId
+        - questionId
+        - questionText
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalDocuments:
+          type: integer
+        totalQuestions:
+          type: integer
+        totalExperiments:
+          type: integer
+        totalRuns:
+          type: integer
+        completedRuns:
+          type: integer
+        bestFaithfulness:
+          type: number
+          nullable: true
+        bestContextRecall:
+          type: number
+          nullable: true
+        avgLatencyMs:
+          type: number
+          nullable: true
+        recentRuns:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvalRun"
+      required:
+        - totalDocuments
+        - totalQuestions
+        - totalExperiments
+        - totalRuns
+        - completedRuns
+        - recentRuns
+
+    ExperimentComparison:
+      type: object
+      properties:
+        experimentId:
+          type: integer
+        experimentName:
+          type: string
+        runs:
+          type: array
+          items:
+            type: object
+            properties:
+              runId:
+                type: integer
+              runNumber:
+                type: integer
+              status:
+                type: string
+              avgFaithfulness:
+                type: number
+                nullable: true
+              avgContextRecall:
+                type: number
+                nullable: true
+              avgLatencyMs:
+                type: number
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time
+            required:
+              - runId
+              - runNumber
+              - status
+              - createdAt
+        metricsByQuestion:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId:
+                type: integer
+              questionText:
+                type: string
+              runMetrics:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    runId:
+                      type: integer
+                    faithfulness:
+                      type: number
+                      nullable: true
+                    contextRecall:
+                      type: number
+                      nullable: true
+                    latencyMs:
+                      type: number
+                      nullable: true
+                  required:
+                    - runId
+            required:
+              - questionId
+              - questionText
+              - runMetrics
+      required:
+        - experimentId
+        - experimentName
+        - runs
+        - metricsByQuestion
