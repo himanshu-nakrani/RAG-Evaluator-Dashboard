@@ -201,3 +201,77 @@ export interface ExperimentComparison {
 export type ListEvalRunsParams = {
   experimentId?: number;
 };
+
+export type LeaderboardEntriesItem = {
+  rank: number;
+  experimentId: number;
+  experimentName: string;
+  chunkSize: number;
+  embeddingModel: string;
+  retrieverType: string;
+  topK: number;
+  runCount: number;
+  bestFaithfulness?: number | null;
+  bestContextRecall?: number | null;
+  avgLatencyMs?: number | null;
+  latestRunStatus?: string | null;
+};
+
+export interface Leaderboard {
+  entries: LeaderboardEntriesItem[];
+  sortedBy: string;
+}
+
+export type SweepStatus = (typeof SweepStatus)[keyof typeof SweepStatus];
+
+export const SweepStatus = {
+  pending: "pending",
+  running: "running",
+  completed: "completed",
+} as const;
+
+export interface Sweep {
+  id: number;
+  name: string;
+  documentId: number;
+  questionSetId: number;
+  status: SweepStatus;
+  totalExperiments: number;
+  completedExperiments: number;
+  createdAt: string;
+}
+
+export interface SweepDetail {
+  id: number;
+  name: string;
+  documentId: number;
+  questionSetId: number;
+  status: SweepStatus;
+  totalExperiments: number;
+  completedExperiments: number;
+  experiments: Experiment[];
+  createdAt: string;
+}
+
+export interface CreateSweepBody {
+  name: string;
+  documentId: number;
+  questionSetId: number;
+  chunkSizes: number[];
+  embeddingModels: string[];
+  retrieverTypes: string[];
+  topK: number;
+  chunkOverlap: number;
+  autoRun?: boolean;
+}
+
+export interface ImportQuestionsBody {
+  csvText: string;
+}
+
+export interface ImportQuestionsResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
+  questions: Question[];
+}

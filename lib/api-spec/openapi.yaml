@@ -20,6 +20,10 @@ tags:
     description: Evaluation run management
   - name: dashboard
     description: Dashboard summaries
+  - name: sweeps
+    description: Parameter sweep management
+  - name: leaderboard
+    description: Cross-experiment leaderboard
 
 paths:
   /healthz:
@@ -348,6 +352,95 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExperimentComparison"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get ranked list of all experiments by performance metrics
+      responses:
+        "200":
+          description: Leaderboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leaderboard"
+
+  /sweeps:
+    get:
+      operationId: listSweeps
+      tags: [sweeps]
+      summary: List all parameter sweeps
+      responses:
+        "200":
+          description: List of sweeps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sweep"
+    post:
+      operationId: createSweep
+      tags: [sweeps]
+      summary: Create a parameter sweep generating multiple experiments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSweepBody"
+      responses:
+        "201":
+          description: Sweep created and experiments launched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sweep"
+
+  /sweeps/{id}:
+    get:
+      operationId: getSweep
+      tags: [sweeps]
+      summary: Get sweep detail with all generated experiments and their status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sweep detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SweepDetail"
+
+  /question-sets/{id}/import:
+    post:
+      operationId: importQuestions
+      tags: [question-sets]
+      summary: Bulk import questions from CSV text (columns: text, ground_truth)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportQuestionsBody"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportQuestionsResult"
 
 components:
   schemas:
@@ -805,3 +898,188 @@ components:
         - experimentName
         - runs
         - metricsByQuestion
+
+    Leaderboard:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              rank:
+                type: integer
+              experimentId:
+                type: integer
+              experimentName:
+                type: string
+              chunkSize:
+                type: integer
+              embeddingModel:
+                type: string
+              retrieverType:
+                type: string
+              topK:
+                type: integer
+              runCount:
+                type: integer
+              bestFaithfulness:
+                type: number
+                nullable: true
+              bestContextRecall:
+                type: number
+                nullable: true
+              avgLatencyMs:
+                type: number
+                nullable: true
+              latestRunStatus:
+                type: string
+                nullable: true
+            required:
+              - rank
+              - experimentId
+              - experimentName
+              - chunkSize
+              - embeddingModel
+              - retrieverType
+              - topK
+              - runCount
+        sortedBy:
+          type: string
+      required:
+        - entries
+        - sortedBy
+
+    Sweep:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, running, completed]
+        totalExperiments:
+          type: integer
+        completedExperiments:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - documentId
+        - questionSetId
+        - status
+        - totalExperiments
+        - completedExperiments
+        - createdAt
+
+    SweepDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, running, completed]
+        totalExperiments:
+          type: integer
+        completedExperiments:
+          type: integer
+        experiments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Experiment"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - documentId
+        - questionSetId
+        - status
+        - totalExperiments
+        - completedExperiments
+        - experiments
+        - createdAt
+
+    CreateSweepBody:
+      type: object
+      properties:
+        name:
+          type: string
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        chunkSizes:
+          type: array
+          items:
+            type: integer
+        embeddingModels:
+          type: array
+          items:
+            type: string
+        retrieverTypes:
+          type: array
+          items:
+            type: string
+        topK:
+          type: integer
+        chunkOverlap:
+          type: integer
+        autoRun:
+          type: boolean
+      required:
+        - name
+        - documentId
+        - questionSetId
+        - chunkSizes
+        - embeddingModels
+        - retrieverTypes
+        - topK
+        - chunkOverlap
+
+    ImportQuestionsBody:
+      type: object
+      properties:
+        csvText:
+          type: string
+          description: CSV content with headers. Recognized columns: text, question, ground_truth, answer
+      required:
+        - csvText
+
+    ImportQuestionsResult:
+      type: object
+      properties:
+        imported:
+          type: integer
+        skipped:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+      required:
+        - imported
+        - skipped
+        - errors
+        - questions

@@ -76,7 +76,7 @@ router.get("/eval-runs/:id", async (req, res) => {
 });
 
 // Simulates a realistic RAG evaluation with deterministic-ish metrics based on config
-async function simulateEvalRun(
+export async function simulateEvalRun(
   runId: number,
   exp: typeof experimentsTable.$inferSelect
 ) {

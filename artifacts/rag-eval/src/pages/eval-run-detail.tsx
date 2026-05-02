@@ -3,12 +3,33 @@ import { useGetEvalRun, getGetEvalRunQueryKey } from "@workspace/api-client-reac
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Activity, CheckCircle2, XCircle, Clock, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Activity, CheckCircle2, XCircle, Clock, ChevronDown, ChevronRight, AlertTriangle, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
+
+function exportRunCsv(run: any) {
+  const headers = ["question", "faithfulness", "context_recall", "latency_ms", "generated_answer", "retrieved_context"];
+  const rows = (run.results ?? []).map((r: any) => [
+    `"${(r.questionText ?? "").replace(/"/g, '""')}"`,
+    r.faithfulness ?? "",
+    r.contextRecall ?? "",
+    r.latencyMs ?? "",
+    `"${(r.generatedAnswer ?? "").replace(/"/g, '""')}"`,
+    `"${(r.retrievedContext ?? "").replace(/"/g, '""')}"`,
+  ]);
+  const csv = [headers.join(","), ...rows.map((r: string[]) => r.join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `eval-run-${run.id}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function ResultRow({ result }: { result: any }) {
   const [expanded, setExpanded] = useState(false);
@@ -147,6 +168,16 @@ export default function EvalRunDetail() {
             )}
           </div>
         </div>
+        {run.results && run.results.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="font-mono shrink-0"
+            onClick={() => exportRunCsv(run)}
+          >
+            <Download className="w-4 h-4 mr-2" /> Export CSV
+          </Button>
+        )}
       </div>
 
       {isRunning && (

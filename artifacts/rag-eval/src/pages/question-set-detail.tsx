@@ -1,16 +1,15 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams } from "wouter";
-import { useGetQuestionSet, useAddQuestion, getGetQuestionSetQueryKey } from "@workspace/api-client-react";
+import { useGetQuestionSet, useAddQuestion, useImportQuestions, getGetQuestionSetQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Plus, ArrowLeft, HelpCircle } from "lucide-react";
+import { MessageSquare, Plus, ArrowLeft, HelpCircle, Upload, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
@@ -20,12 +19,16 @@ export default function QuestionSetDetail() {
   const setId = Number(id);
   const { data: set, isLoading } = useGetQuestionSet(setId, { query: { enabled: !!setId, queryKey: getGetQuestionSetQueryKey(setId) } });
   const addQuestion = useAddQuestion();
+  const importQuestions = useImportQuestions();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [text, setText] = useState("");
   const [groundTruth, setGroundTruth] = useState("");
+  const [csvText, setCsvText] = useState("");
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +46,35 @@ export default function QuestionSetDetail() {
         toast({ title: "Failed to add", description: String(err), variant: "destructive" });
       }
     });
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setCsvText(ev.target?.result as string ?? "");
+    reader.readAsText(file);
+  };
+
+  const handleImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!csvText.trim()) return;
+    importQuestions.mutate(
+      { id: setId, data: { csvText } },
+      {
+        onSuccess: (result: any) => {
+          toast({
+            title: `Imported ${result.imported} question${result.imported !== 1 ? "s" : ""}`,
+            description: result.skipped > 0 ? `${result.skipped} rows skipped.` : undefined,
+          });
+          queryClient.invalidateQueries({ queryKey: getGetQuestionSetQueryKey(setId) });
+          setImportOpen(false);
+          setCsvText("");
+        },
+        onError: (err) =>
+          toast({ title: "Import failed", description: String(err), variant: "destructive" }),
+      }
+    );
   };
 
   if (isLoading) {
@@ -78,12 +110,67 @@ export default function QuestionSetDetail() {
           {set.description && <p className="text-muted-foreground mt-2 max-w-2xl">{set.description}</p>}
         </div>
         
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="font-mono">
-              <Plus className="w-4 h-4 mr-2" /> Add Question
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={importOpen} onOpenChange={setImportOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="font-mono">
+                <Upload className="w-4 h-4 mr-2" /> Import CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] border-border bg-card">
+              <DialogHeader>
+                <DialogTitle className="font-mono flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" /> Import Questions from CSV
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleImport} className="space-y-4 pt-2">
+                <div className="bg-muted/30 border border-border rounded-lg p-3 text-xs font-mono text-muted-foreground space-y-1">
+                  <p className="font-semibold text-foreground">Expected CSV format:</p>
+                  <p>• Required column: <span className="text-primary">text</span> or <span className="text-primary">question</span></p>
+                  <p>• Optional column: <span className="text-primary">ground_truth</span>, <span className="text-primary">answer</span></p>
+                  <p className="pt-1 text-[10px] opacity-70">text,ground_truth<br />"What is X?","X is..."</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-mono text-xs uppercase text-muted-foreground">Upload .csv File</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={handleImportFile}
+                    className="block text-sm text-muted-foreground file:mr-3 file:py-1 file:px-3 file:rounded file:border file:border-border file:text-xs file:font-mono file:bg-background file:text-foreground cursor-pointer"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-mono text-xs uppercase text-muted-foreground">Or paste CSV text</Label>
+                  <Textarea
+                    value={csvText}
+                    onChange={(e) => setCsvText(e.target.value)}
+                    placeholder={"text,ground_truth\n\"What is RAG?\",\"RAG stands for...\""}
+                    className="bg-background font-mono text-xs min-h-[120px] resize-none"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                  <Button type="button" variant="ghost" className="font-mono" onClick={() => setImportOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={importQuestions.isPending || !csvText.trim()}
+                    className="font-mono"
+                  >
+                    {importQuestions.isPending ? "Importing..." : "Import Questions"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="font-mono">
+                <Plus className="w-4 h-4 mr-2" /> Add Question
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] border-border bg-card">
             <DialogHeader>
               <DialogTitle className="font-mono">Add Question to Set</DialogTitle>
@@ -118,7 +205,8 @@ export default function QuestionSetDetail() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {!set.questions?.length ? (

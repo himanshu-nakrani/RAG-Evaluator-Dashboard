@@ -91,4 +91,77 @@ router.post("/question-sets/:id/questions", async (req, res) => {
   }
 });
 
+router.post("/question-sets/:id/import", async (req, res) => {
+  try {
+    const questionSetId = Number(req.params.id);
+    const [set] = await db.select().from(questionSetsTable).where(eq(questionSetsTable.id, questionSetId));
+    if (!set) {
+      res.status(404).json({ error: "Question set not found" });
+      return;
+    }
+
+    const { csvText } = req.body as { csvText: string };
+    if (!csvText || typeof csvText !== "string") {
+      res.status(400).json({ error: "csvText is required" });
+      return;
+    }
+
+    const lines = csvText.trim().split("\n").filter(Boolean);
+    if (lines.length < 2) {
+      res.json({ imported: 0, skipped: 0, errors: ["CSV must have a header row and at least one data row"], questions: [] });
+      return;
+    }
+
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/['"]/g, ""));
+    const textIdx = header.findIndex((h) => ["text", "question"].includes(h));
+    const gtIdx = header.findIndex((h) => ["ground_truth", "answer", "groundtruth"].includes(h));
+
+    if (textIdx === -1) {
+      res.status(400).json({ error: 'CSV must have a "text" or "question" column' });
+      return;
+    }
+
+    const errors: string[] = [];
+    let skipped = 0;
+    const toInsert: Array<{ questionSetId: number; text: string; groundTruth: string | null }> = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseCSVLine(lines[i]);
+      const text = cols[textIdx]?.trim().replace(/^["']|["']$/g, "");
+      if (!text) { skipped++; continue; }
+      const groundTruth = gtIdx >= 0 ? (cols[gtIdx]?.trim().replace(/^["']|["']$/g, "") || null) : null;
+      toInsert.push({ questionSetId, text, groundTruth });
+    }
+
+    let questions: typeof questionsTable.$inferSelect[] = [];
+    if (toInsert.length > 0) {
+      questions = await db.insert(questionsTable).values(toInsert).returning();
+    }
+
+    res.json({ imported: questions.length, skipped, errors, questions });
+  } catch (err) {
+    req.log.error({ err }, "Failed to import questions");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
 export default router;

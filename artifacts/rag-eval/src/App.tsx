@@ -12,6 +12,9 @@ import QuestionSetDetail from "@/pages/question-set-detail";
 import Experiments from "@/pages/experiments";
 import ExperimentDetail from "@/pages/experiment-detail";
 import EvalRunDetail from "@/pages/eval-run-detail";
+import Leaderboard from "@/pages/leaderboard";
+import Sweeps from "@/pages/sweeps";
+import SweepDetail from "@/pages/sweep-detail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +36,9 @@ function Router() {
         <Route path="/experiments" component={Experiments} />
         <Route path="/experiments/:id" component={ExperimentDetail} />
         <Route path="/eval-runs/:id" component={EvalRunDetail} />
+        <Route path="/leaderboard" component={Leaderboard} />
+        <Route path="/sweeps" component={Sweeps} />
+        <Route path="/sweeps/:id" component={SweepDetail} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

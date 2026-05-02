@@ -317,3 +317,71 @@ export const CompareExperimentRunsResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary Get leaderboard
+ */
+export const GetLeaderboardResponse = zod.object({
+  entries: zod.array(
+    zod.object({
+      rank: zod.number(),
+      experimentId: zod.number(),
+      experimentName: zod.string(),
+      chunkSize: zod.number(),
+      embeddingModel: zod.string(),
+      retrieverType: zod.string(),
+      topK: zod.number(),
+      runCount: zod.number(),
+      bestFaithfulness: zod.number().nullish(),
+      bestContextRecall: zod.number().nullish(),
+      avgLatencyMs: zod.number().nullish(),
+      latestRunStatus: zod.string().nullish(),
+    }),
+  ),
+  sortedBy: zod.string(),
+});
+
+/**
+ * @summary List sweeps
+ */
+export const ListSweepsResponse = zod.array(
+  zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    documentId: zod.number(),
+    questionSetId: zod.number(),
+    status: zod.enum(["pending", "running", "completed"]),
+    totalExperiments: zod.number(),
+    completedExperiments: zod.number(),
+    createdAt: zod.coerce.date(),
+  }),
+);
+
+/**
+ * @summary Create sweep
+ */
+export const CreateSweepBody = zod.object({
+  name: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  chunkSizes: zod.array(zod.number()),
+  embeddingModels: zod.array(zod.string()),
+  retrieverTypes: zod.array(zod.string()),
+  topK: zod.number(),
+  chunkOverlap: zod.number(),
+  autoRun: zod.boolean().optional(),
+});
+
+/**
+ * @summary Get sweep
+ */
+export const GetSweepParams = zod.object({ id: zod.coerce.number() });
+
+/**
+ * @summary Import questions from CSV
+ */
+export const ImportQuestionsParams = zod.object({ id: zod.coerce.number() });
+
+export const ImportQuestionsBody = zod.object({
+  csvText: zod.string(),
+});

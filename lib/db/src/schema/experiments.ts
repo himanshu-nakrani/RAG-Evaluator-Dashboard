@@ -14,6 +14,7 @@ export const experimentsTable = pgTable("experiments", {
   topK: integer("top_k").notNull().default(5),
   documentId: integer("document_id").references(() => documentsTable.id, { onDelete: "cascade" }).notNull(),
   questionSetId: integer("question_set_id").references(() => questionSetsTable.id, { onDelete: "cascade" }).notNull(),
+  sweepId: integer("sweep_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -22,6 +22,7 @@ import type {
   CreateExperimentBody,
   CreateQuestionBody,
   CreateQuestionSetBody,
+  CreateSweepBody,
   DashboardSummary,
   Document,
   EvalRun,
@@ -30,10 +31,15 @@ import type {
   ExperimentComparison,
   ExperimentDetail,
   HealthStatus,
+  ImportQuestionsBody,
+  ImportQuestionsResult,
+  Leaderboard,
   ListEvalRunsParams,
   Question,
   QuestionSet,
   QuestionSetDetail,
+  Sweep,
+  SweepDetail,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1633,3 +1639,268 @@ export function useCompareExperimentRuns<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+// ── Leaderboard ──────────────────────────────────────────────────────────────
+
+export const getLeaderboardUrl = () => `/api/leaderboard`;
+
+export const getLeaderboard = async (options?: RequestInit): Promise<Leaderboard> =>
+  customFetch<Leaderboard>(getLeaderboardUrl(), { ...options, method: "GET" });
+
+export const getGetLeaderboardQueryKey = () => [`/api/leaderboard`] as const;
+
+export const getGetLeaderboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLeaderboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getLeaderboard>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetLeaderboardQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboard>>> = ({ signal }) =>
+    getLeaderboard({ signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLeaderboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLeaderboardQueryResult = NonNullable<Awaited<ReturnType<typeof getLeaderboard>>>;
+export type GetLeaderboardQueryError = ErrorType<unknown>;
+
+export function useGetLeaderboard<
+  TData = Awaited<ReturnType<typeof getLeaderboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getLeaderboard>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLeaderboardQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+// ── Sweeps ───────────────────────────────────────────────────────────────────
+
+export const getListSweepsUrl = () => `/api/sweeps`;
+
+export const listSweeps = async (options?: RequestInit): Promise<Sweep[]> =>
+  customFetch<Sweep[]>(getListSweepsUrl(), { ...options, method: "GET" });
+
+export const getListSweepsQueryKey = () => [`/api/sweeps`] as const;
+
+export const getListSweepsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSweeps>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listSweeps>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getListSweepsQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listSweeps>>> = ({ signal }) =>
+    listSweeps({ signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSweeps>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSweepsQueryResult = NonNullable<Awaited<ReturnType<typeof listSweeps>>>;
+export type ListSweepsQueryError = ErrorType<unknown>;
+
+export function useListSweeps<
+  TData = Awaited<ReturnType<typeof listSweeps>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listSweeps>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSweepsQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getCreateSweepUrl = () => `/api/sweeps`;
+
+export const createSweep = async (
+  createSweepBody: CreateSweepBody,
+  options?: RequestInit,
+): Promise<Sweep> =>
+  customFetch<Sweep>(getCreateSweepUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSweepBody),
+  });
+
+export const getCreateSweepMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSweep>>,
+    TError,
+    { data: BodyType<CreateSweepBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createSweep>>,
+  TError,
+  { data: BodyType<CreateSweepBody> },
+  TContext
+> => {
+  const mutationKey = ["createSweep"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createSweep>>,
+    { data: BodyType<CreateSweepBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+    return createSweep(data, requestOptions);
+  };
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateSweepMutationResult = NonNullable<Awaited<ReturnType<typeof createSweep>>>;
+export type CreateSweepMutationBody = BodyType<CreateSweepBody>;
+export type CreateSweepMutationError = ErrorType<unknown>;
+
+export const useCreateSweep = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSweep>>,
+    TError,
+    { data: BodyType<CreateSweepBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createSweep>>,
+  TError,
+  { data: BodyType<CreateSweepBody> },
+  TContext
+> => useMutation(getCreateSweepMutationOptions(options));
+
+export const getGetSweepUrl = (id: number) => `/api/sweeps/${id}`;
+
+export const getSweep = async (id: number, options?: RequestInit): Promise<SweepDetail> =>
+  customFetch<SweepDetail>(getGetSweepUrl(id), { ...options, method: "GET" });
+
+export const getGetSweepQueryKey = (id: number) => [`/api/sweeps/${id}`] as const;
+
+export const getGetSweepQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSweep>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getSweep>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetSweepQueryKey(id);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSweep>>> = ({ signal }) =>
+    getSweep(id, { signal, ...requestOptions });
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSweep>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSweepQueryResult = NonNullable<Awaited<ReturnType<typeof getSweep>>>;
+export type GetSweepQueryError = ErrorType<unknown>;
+
+export function useGetSweep<
+  TData = Awaited<ReturnType<typeof getSweep>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getSweep>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSweepQueryOptions(id, options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+// ── Import Questions ──────────────────────────────────────────────────────────
+
+export const getImportQuestionsUrl = (id: number) => `/api/question-sets/${id}/import`;
+
+export const importQuestions = async (
+  id: number,
+  importQuestionsBody: ImportQuestionsBody,
+  options?: RequestInit,
+): Promise<ImportQuestionsResult> =>
+  customFetch<ImportQuestionsResult>(getImportQuestionsUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(importQuestionsBody),
+  });
+
+export const getImportQuestionsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof importQuestions>>,
+    TError,
+    { id: number; data: BodyType<ImportQuestionsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof importQuestions>>,
+  TError,
+  { id: number; data: BodyType<ImportQuestionsBody> },
+  TContext
+> => {
+  const mutationKey = ["importQuestions"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof importQuestions>>,
+    { id: number; data: BodyType<ImportQuestionsBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+    return importQuestions(id, data, requestOptions);
+  };
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ImportQuestionsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof importQuestions>>
+>;
+export type ImportQuestionsMutationBody = BodyType<ImportQuestionsBody>;
+export type ImportQuestionsMutationError = ErrorType<unknown>;
+
+export const useImportQuestions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof importQuestions>>,
+    TError,
+    { id: number; data: BodyType<ImportQuestionsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof importQuestions>>,
+  TError,
+  { id: number; data: BodyType<ImportQuestionsBody> },
+  TContext
+> => useMutation(getImportQuestionsMutationOptions(options));
