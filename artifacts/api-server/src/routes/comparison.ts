@@ -29,7 +29,6 @@ router.get("/experiments/compare", async (req, res) => {
       return;
     }
 
-    // Get best metrics for each experiment
     const [metrics1] = await db
       .select({
         bestFaithfulness: max(evalRunsTable.avgFaithfulness),

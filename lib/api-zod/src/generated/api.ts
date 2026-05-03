@@ -385,3 +385,129 @@ export const ImportQuestionsParams = zod.object({ id: zod.coerce.number() });
 export const ImportQuestionsBody = zod.object({
   csvText: zod.string(),
 });
+
+/**
+ * @summary Get experiment templates
+ */
+export const ListTemplatesResponse = zod.array(
+  zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    description: zod.string().nullish(),
+    chunkSizes: zod.array(zod.number()),
+    embeddingModels: zod.array(zod.string()),
+    retrieverTypes: zod.array(zod.string()),
+    topK: zod.number(),
+    chunkOverlap: zod.number(),
+    isPreset: zod.boolean(),
+    category: zod.string().nullish(),
+    createdAt: zod.coerce.date(),
+  })
+);
+
+/**
+ * @summary Create template
+ */
+export const CreateTemplateBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+  chunkSizes: zod.array(zod.number()),
+  embeddingModels: zod.array(zod.string()),
+  retrieverTypes: zod.array(zod.string()),
+  topK: zod.number(),
+  chunkOverlap: zod.number().optional(),
+  category: zod.string().optional(),
+});
+
+/**
+ * @summary Get leaderboard with filters
+ */
+export const GetLeaderboardFiltersResponse = zod.object({
+  entries: zod.array(
+    zod.object({
+      rank: zod.number(),
+      experimentId: zod.number(),
+      experimentName: zod.string(),
+      chunkSize: zod.number(),
+      embeddingModel: zod.string(),
+      retrieverType: zod.string(),
+      topK: zod.number(),
+      runCount: zod.number(),
+      bestFaithfulness: zod.number().nullish(),
+      bestContextRecall: zod.number().nullish(),
+      avgLatencyMs: zod.number().nullish(),
+      latestRunStatus: zod.string().nullish(),
+      regressionDetected: zod.boolean().optional(),
+      regressionSeverity: zod.string().nullish().optional(),
+      tags: zod.array(zod.string()).optional(),
+    })
+  ),
+  sortedBy: zod.string(),
+  filters: zod.object({
+    chunkSizes: zod.array(zod.number()).optional(),
+    embeddingModels: zod.array(zod.string()).optional(),
+    retrieverTypes: zod.array(zod.string()).optional(),
+  }),
+});
+
+/**
+ * @summary Compare two experiments
+ */
+export const CompareExperimentsResponse = zod.object({
+  exp1: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    chunkSize: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+    bestFaithfulness: zod.number().nullish(),
+    bestContextRecall: zod.number().nullish(),
+    avgLatencyMs: zod.number().nullish(),
+    runCount: zod.number(),
+  }),
+  exp2: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    chunkSize: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+    bestFaithfulness: zod.number().nullish(),
+    bestContextRecall: zod.number().nullish(),
+    avgLatencyMs: zod.number().nullish(),
+    runCount: zod.number(),
+  }),
+  diff: zod.object({
+    faithfulnessDiff: zod.number().nullish(),
+    recallDiff: zod.number().nullish(),
+    latencyDiff: zod.number().nullish(),
+  }),
+});
+
+/**
+ * @summary Get experiment trends
+ */
+export const GetExperimentTrendsResponse = zod.object({
+  experimentId: zod.number(),
+  experimentName: zod.string(),
+  trends: zod.array(
+    zod.object({
+      runNumber: zod.number(),
+      faithfulness: zod.number().nullish(),
+      contextRecall: zod.number().nullish(),
+      latencyMs: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+    })
+  ),
+  regressions: zod.array(
+    zod.object({
+      runNumber: zod.number(),
+      metric: zod.string(),
+      previousValue: zod.number(),
+      currentValue: zod.number(),
+      percentChange: zod.number(),
+      severity: zod.enum(["low", "medium", "high"]),
+    })
+  ),
+});
