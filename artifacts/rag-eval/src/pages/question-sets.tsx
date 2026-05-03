@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Plus, Trash2, HelpCircle, ArrowRight } from "lucide-react";
@@ -24,6 +25,8 @@ export default function QuestionSets() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +46,21 @@ export default function QuestionSets() {
     });
   };
 
-  const handleDelete = async (e: React.MouseEvent, id: number) => {
+  const handleDelete = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this question set?")) return;
-    deleteSet.mutate({ id }, {
+    setDeleteId(id);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId === null) return;
+    deleteSet.mutate({ id: deleteId }, {
       onSuccess: () => {
         toast({ title: "Deleted successfully" });
         queryClient.invalidateQueries({ queryKey: getListQuestionSetsQueryKey() });
+        setDeleteOpen(false);
+        setDeleteId(null);
       }
     });
   };
@@ -92,7 +102,7 @@ export default function QuestionSets() {
                   value={description} 
                   onChange={(e) => setDescription(e.target.value)} 
                   placeholder="Describe the purpose of this test suite..."
-                  className="min-h-[100px] bg-background font-mono text-sm resize-none"
+                  className="min-h-[100px] bg-background text-sm resize-none"
                 />
               </div>
               <div className="flex justify-end pt-2">
@@ -104,6 +114,25 @@ export default function QuestionSets() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="border-border bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Question Set</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This question set will be permanently deleted. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-2">
+            <AlertDialogCancel className="bg-background text-foreground border-border hover:bg-muted/50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

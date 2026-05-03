@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,8 @@ export default function Experiments() {
   const [topK, setTopK] = useState("5");
   const [documentId, setDocumentId] = useState("");
   const [questionSetId, setQuestionSetId] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,14 +66,21 @@ export default function Experiments() {
     });
   };
 
-  const handleDelete = async (e: React.MouseEvent, id: number) => {
+  const handleDelete = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this experiment and all its runs?")) return;
-    deleteExperiment.mutate({ id }, {
+    setDeleteId(id);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId === null) return;
+    deleteExperiment.mutate({ id: deleteId }, {
       onSuccess: () => {
         toast({ title: "Experiment deleted" });
         queryClient.invalidateQueries({ queryKey: getListExperimentsQueryKey() });
+        setDeleteOpen(false);
+        setDeleteId(null);
       }
     });
   };
@@ -208,6 +218,25 @@ export default function Experiments() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="border-border bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Experiment</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This experiment and all its evaluation runs will be permanently deleted. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-2">
+            <AlertDialogCancel className="bg-background text-foreground border-border hover:bg-muted/50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {expLoading ? (
         <div className="grid grid-cols-1 gap-4">
