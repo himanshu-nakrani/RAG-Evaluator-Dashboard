@@ -15,6 +15,9 @@ import EvalRunDetail from "@/pages/eval-run-detail";
 import Leaderboard from "@/pages/leaderboard";
 import Sweeps from "@/pages/sweeps";
 import SweepDetail from "@/pages/sweep-detail";
+import ExperimentTrends from "@/pages/experiment-trends";
+import ExperimentComparison from "@/pages/experiment-comparison";
+import TemplatesLibrary from "@/pages/templates-library";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,11 +37,14 @@ function Router() {
         <Route path="/question-sets" component={QuestionSets} />
         <Route path="/question-sets/:id" component={QuestionSetDetail} />
         <Route path="/experiments" component={Experiments} />
+        <Route path="/experiments/compare" component={ExperimentComparison} />
+        <Route path="/experiments/:id/trends" component={ExperimentTrends} />
         <Route path="/experiments/:id" component={ExperimentDetail} />
         <Route path="/eval-runs/:id" component={EvalRunDetail} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/sweeps" component={Sweeps} />
         <Route path="/sweeps/:id" component={SweepDetail} />
+        <Route path="/templates" component={TemplatesLibrary} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

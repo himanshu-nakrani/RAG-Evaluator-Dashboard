@@ -6,6 +6,8 @@ import {
   FlaskConical,
   Trophy,
   Zap,
+  BookMarked,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +17,9 @@ const navigation = [
   { name: "Question Sets", href: "/question-sets", icon: MessageSquare },
   { name: "Experiments", href: "/experiments", icon: FlaskConical },
   { name: "Sweeps", href: "/sweeps", icon: Zap },
+  { name: "Compare", href: "/experiments/compare", icon: Scale },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+  { name: "Templates", href: "/templates", icon: BookMarked },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

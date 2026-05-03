@@ -1904,3 +1904,229 @@ export const useImportQuestions = <TError = ErrorType<unknown>, TContext = unkno
   { id: number; data: BodyType<ImportQuestionsBody> },
   TContext
 > => useMutation(getImportQuestionsMutationOptions(options));
+
+// ── Templates ────────────────────────────────────────────────────────────────
+
+export const getListTemplatesUrl = () => `/api/templates`;
+
+export const listTemplates = async (options?: RequestInit): Promise<any[]> =>
+  customFetch<any[]>(getListTemplatesUrl(), { ...options, method: "GET" });
+
+export const getListTemplatesQueryKey = () => [getListTemplatesUrl()] as const;
+
+export const getListTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getListTemplatesQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listTemplates>>> = ({ signal }) =>
+    listTemplates({ signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTemplates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTemplatesQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getCreateTemplateUrl = () => `/api/templates`;
+
+export const createTemplate = async (
+  data: Record<string, unknown>,
+  options?: RequestInit,
+): Promise<any> =>
+  customFetch<any>(getCreateTemplateUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(data),
+  });
+
+export const getCreateTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTemplate>>,
+    TError,
+    { data: Record<string, unknown> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTemplate>>,
+  TError,
+  { data: Record<string, unknown> },
+  TContext
+> => {
+  const mutationKey = ["createTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTemplate>>,
+    { data: Record<string, unknown> }
+  > = (props) => {
+    const { data } = props ?? {};
+    return createTemplate(data, requestOptions);
+  };
+  return { mutationFn, ...mutationOptions };
+};
+
+export const useCreateTemplate = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTemplate>>,
+    TError,
+    { data: Record<string, unknown> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createTemplate>>,
+  TError,
+  { data: Record<string, unknown> },
+  TContext
+> => useMutation(getCreateTemplateMutationOptions(options));
+
+export const getDeleteTemplateUrl = (id: number) => `/api/templates/${id}`;
+
+export const deleteTemplate = async (id: number, options?: RequestInit): Promise<any> =>
+  customFetch<any>(getDeleteTemplateUrl(id), { ...options, method: "DELETE" });
+
+export const useDeleteTemplate = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTemplate>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTemplate>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTemplate>>, { id: number }> =
+    (props) => deleteTemplate(props.id, options?.request);
+  return useMutation({ mutationFn, ...options?.mutation });
+};
+
+// ── Comparison ───────────────────────────────────────────────────────────────
+
+export const getCompareExperimentsUrl = (id1: number, id2: number) =>
+  `/api/experiments/compare?id1=${id1}&id2=${id2}`;
+
+export const compareExperiments = async (
+  id1: number,
+  id2: number,
+  options?: RequestInit,
+): Promise<any> =>
+  customFetch<any>(getCompareExperimentsUrl(id1, id2), { ...options, method: "GET" });
+
+export const getCompareExperimentsQueryKey = (id1: number, id2: number) =>
+  [getCompareExperimentsUrl(id1, id2)] as const;
+
+export const getCompareExperimentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof compareExperiments>>,
+  TError = ErrorType<unknown>,
+>(
+  id1: number,
+  id2: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof compareExperiments>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getCompareExperimentsQueryKey(id1, id2);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof compareExperiments>>> = ({ signal }) =>
+    compareExperiments(id1, id2, { signal, ...requestOptions });
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id1 && !!id2,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof compareExperiments>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export function useCompareExperiments<
+  TData = Awaited<ReturnType<typeof compareExperiments>>,
+  TError = ErrorType<unknown>,
+>(
+  id1: number,
+  id2: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof compareExperiments>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getCompareExperimentsQueryOptions(id1, id2, options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+// ── Experiment Trends ─────────────────────────────────────────────────────────
+
+export const getGetExperimentTrendsUrl = (id: number) => `/api/experiments/${id}/trends`;
+
+export const getExperimentTrends = async (id: number, options?: RequestInit): Promise<any> =>
+  customFetch<any>(getGetExperimentTrendsUrl(id), { ...options, method: "GET" });
+
+export const getGetExperimentTrendsQueryKey = (id: number) =>
+  [getGetExperimentTrendsUrl(id)] as const;
+
+export const getGetExperimentTrendsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getExperimentTrends>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getExperimentTrends>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetExperimentTrendsQueryKey(id);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getExperimentTrends>>> = ({ signal }) =>
+    getExperimentTrends(id, { signal, ...requestOptions });
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getExperimentTrends>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export function useGetExperimentTrends<
+  TData = Awaited<ReturnType<typeof getExperimentTrends>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getExperimentTrends>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetExperimentTrendsQueryOptions(id, options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}

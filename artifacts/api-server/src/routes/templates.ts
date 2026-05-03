@@ -1,60 +1,85 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { templatesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { CreateTemplateBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
-// Seed preset templates on startup
+const CreateTemplateBodySchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  chunkSizes: z.array(z.number()).min(1),
+  embeddingModels: z.array(z.string()).min(1),
+  retrieverTypes: z.array(z.string()).min(1),
+  topK: z.number().int().min(1),
+  chunkOverlap: z.number().int().min(0).optional(),
+  category: z.string().optional(),
+});
+
 async function seedPresets() {
-  const existing = await db
-    .select()
-    .from(templatesTable)
-    .where(db.expression(sql`${templatesTable.isPreset} = true`));
+  try {
+    const existing = await db
+      .select()
+      .from(templatesTable)
+      .where(eq(templatesTable.isPreset, true));
 
-  if (existing.length === 0) {
-    const presets = [
-      {
-        name: "Balanced",
-        description: "Good balance between accuracy and speed",
-        chunkSizes: [256, 512],
-        embeddingModels: ["text-embedding-3-small", "text-embedding-3-large"],
-        retrieverTypes: ["similarity", "hybrid"],
-        topK: 5,
-        chunkOverlap: 50,
-        isPreset: true,
-        category: "General",
-      },
-      {
-        name: "Precision Focused",
-        description: "Prioritize accuracy over speed",
-        chunkSizes: [512, 1024],
-        embeddingModels: ["text-embedding-3-large"],
-        retrieverTypes: ["mmr", "hybrid"],
-        topK: 10,
-        chunkOverlap: 100,
-        isPreset: true,
-        category: "High Accuracy",
-      },
-      {
-        name: "Speed Optimized",
-        description: "Fast inference with decent accuracy",
-        chunkSizes: [128, 256],
-        embeddingModels: ["text-embedding-3-small"],
-        retrieverTypes: ["similarity"],
-        topK: 3,
-        chunkOverlap: 0,
-        isPreset: true,
-        category: "Performance",
-      },
-    ];
+    if (existing.length === 0) {
+      const presets = [
+        {
+          name: "Balanced",
+          description: "Good balance between accuracy and speed",
+          chunkSizes: [256, 512],
+          embeddingModels: ["text-embedding-3-small", "text-embedding-3-large"],
+          retrieverTypes: ["similarity", "hybrid"],
+          topK: 5,
+          chunkOverlap: 50,
+          isPreset: true,
+          category: "General",
+        },
+        {
+          name: "Precision Focused",
+          description: "Prioritize accuracy over speed, use larger chunks and more context",
+          chunkSizes: [512, 1024],
+          embeddingModels: ["text-embedding-3-large"],
+          retrieverTypes: ["mmr", "hybrid"],
+          topK: 10,
+          chunkOverlap: 100,
+          isPreset: true,
+          category: "High Accuracy",
+        },
+        {
+          name: "Speed Optimized",
+          description: "Fast inference with smaller chunks and minimal retrieval",
+          chunkSizes: [128, 256],
+          embeddingModels: ["text-embedding-3-small"],
+          retrieverTypes: ["similarity"],
+          topK: 3,
+          chunkOverlap: 0,
+          isPreset: true,
+          category: "Performance",
+        },
+        {
+          name: "Comprehensive Sweep",
+          description: "Exhaustive search across all common parameter combinations",
+          chunkSizes: [128, 256, 512, 1024],
+          embeddingModels: ["text-embedding-3-small", "text-embedding-3-large"],
+          retrieverTypes: ["similarity", "mmr", "hybrid"],
+          topK: 5,
+          chunkOverlap: 50,
+          isPreset: true,
+          category: "Research",
+        },
+      ];
 
-    await db.insert(templatesTable).values(presets);
+      await db.insert(templatesTable).values(presets);
+    }
+  } catch {
+    // Table may not exist yet during migrations
   }
 }
 
-seedPresets().catch(console.error);
+seedPresets();
 
 router.get("/templates", async (req, res) => {
   try {
@@ -68,7 +93,7 @@ router.get("/templates", async (req, res) => {
 
 router.post("/templates", async (req, res) => {
   try {
-    const body = CreateTemplateBody.parse(req.body);
+    const body = CreateTemplateBodySchema.parse(req.body);
     const [template] = await db
       .insert(templatesTable)
       .values({
@@ -91,6 +116,26 @@ router.post("/templates", async (req, res) => {
       return;
     }
     req.log.error({ err }, "Failed to create template");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/templates/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const [deleted] = await db
+      .delete(templatesTable)
+      .where(eq(templatesTable.id, id))
+      .returning();
+
+    if (!deleted) {
+      res.status(404).json({ error: "Template not found" });
+      return;
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete template");
     res.status(500).json({ error: "Internal server error" });
   }
 });
