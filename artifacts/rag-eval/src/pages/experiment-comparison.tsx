@@ -27,7 +27,7 @@ function DiffBadge({ diff, lowerIsBetter = false }: { diff: number | null; lower
   const isPositive = lowerIsBetter ? diff < 0 : diff > 0;
   const isNegative = lowerIsBetter ? diff > 0 : diff < 0;
   return (
-    <div className={`flex items-center gap-1 font-mono font-bold text-sm ${isPositive ? "text-green-400" : isNegative ? "text-red-400" : "text-muted-foreground"}`}>
+    <div className={`flex items-center gap-1 font-bold text-sm ${isPositive ? "text-green-400" : isNegative ? "text-red-400" : "text-muted-foreground"}`}>
       {isPositive ? <TrendingUp className="w-3 h-3" /> : isNegative ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
       {diff > 0 ? "+" : ""}{typeof diff === "number" && Math.abs(diff) < 1 ? diff.toFixed(3) : Math.round(diff)}
       {lowerIsBetter && diff !== 0 ? "ms" : ""}
@@ -74,11 +74,11 @@ export default function ExperimentComparison() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
           <Scale className="w-8 h-8 text-primary" />
           Compare Experiments
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm font-mono">
+        <p className="text-muted-foreground mt-1 text-sm">
           Side-by-side experiment metrics comparison
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function ExperimentComparison() {
 
       {!selectedExp1 || !selectedExp2 ? (
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center">
-          <div className="text-muted-foreground font-mono">
+          <div className="text-muted-foreground">
             <Scale className="w-10 h-10 mx-auto mb-3 opacity-20" />
             <p className="text-sm">Select two experiments to compare their metrics</p>
           </div>
@@ -175,7 +175,7 @@ export default function ExperimentComparison() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between font-mono">
+                      <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground uppercase tracking-widest">
                           Faithfulness
                         </span>
@@ -183,7 +183,7 @@ export default function ExperimentComparison() {
                           {exp.bestFaithfulness != null ? exp.bestFaithfulness.toFixed(3) : "—"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between font-mono">
+                      <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground uppercase tracking-widest">
                           Recall
                         </span>
@@ -191,7 +191,7 @@ export default function ExperimentComparison() {
                           {exp.bestContextRecall != null ? exp.bestContextRecall.toFixed(3) : "—"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between font-mono">
+                      <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground uppercase tracking-widest">
                           Latency
                         </span>
@@ -199,7 +199,7 @@ export default function ExperimentComparison() {
                           {exp.avgLatencyMs != null ? `${Math.round(exp.avgLatencyMs)}ms` : "—"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between font-mono">
+                      <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground uppercase tracking-widest">
                           Runs
                         </span>
@@ -214,26 +214,26 @@ export default function ExperimentComparison() {
 
           <Card className="border-border bg-card">
             <CardHeader className="pb-3">
-              <CardTitle className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Difference (B − A)
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-6">
                 <div className="text-center space-y-1">
-                  <div className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
+                  <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">
                     Faithfulness Δ
                   </div>
                   <DiffBadge diff={comparison.diff.faithfulnessDiff} />
                 </div>
                 <div className="text-center space-y-1">
-                  <div className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
+                  <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">
                     Recall Δ
                   </div>
                   <DiffBadge diff={comparison.diff.recallDiff} />
                 </div>
                 <div className="text-center space-y-1">
-                  <div className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
+                  <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">
                     Latency Δ
                   </div>
                   <DiffBadge diff={comparison.diff.latencyDiff} lowerIsBetter />
@@ -245,7 +245,7 @@ export default function ExperimentComparison() {
           {radarData.length > 0 && (
             <Card className="border-border bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Performance Profile
                 </CardTitle>
               </CardHeader>

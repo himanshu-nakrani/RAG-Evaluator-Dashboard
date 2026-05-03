@@ -96,7 +96,7 @@ export default function QuestionSets() {
                 />
               </div>
               <div className="flex justify-end pt-2">
-                <Button type="submit" disabled={createSet.isPending} className="font-mono">
+                <Button type="submit" disabled={createSet.isPending}>
                   {createSet.isPending ? "Creating..." : "Create Set"}
                 </Button>
               </div>
@@ -113,9 +113,9 @@ export default function QuestionSets() {
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
             <MessageSquare className="w-12 h-12 mb-4 opacity-20" />
-            <h3 className="text-lg font-medium font-mono mb-2">No question sets</h3>
+            <h3 className="text-lg font-medium mb-2">No question sets</h3>
             <p className="text-sm mb-6 max-w-md">Create sets of questions (with optional ground truth answers) to evaluate your RAG pipelines against.</p>
-            <Button onClick={() => setOpen(true)} variant="outline" className="font-mono">
+            <Button onClick={() => setOpen(true)} variant="outline">
               <Plus className="w-4 h-4 mr-2" /> Create First Set
             </Button>
           </div>

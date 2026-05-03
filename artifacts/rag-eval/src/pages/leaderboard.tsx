@@ -53,11 +53,11 @@ export default function Leaderboard() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
           <Trophy className="w-8 h-8 text-yellow-500" />
           Leaderboard
         </h1>
-        <p className="text-muted-foreground mt-1 font-mono text-sm">
+        <p className="text-muted-foreground mt-1 text-sm">
           All experiments ranked by best faithfulness score across runs.
         </p>
       </div>
@@ -72,7 +72,7 @@ export default function Leaderboard() {
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center mt-8">
           <div className="flex flex-col items-center text-muted-foreground">
             <Trophy className="w-12 h-12 mb-4 opacity-20" />
-            <h3 className="text-lg font-mono font-medium mb-2">No experiments yet</h3>
+            <h3 className="text-lg font-medium mb-2">No experiments yet</h3>
             <p className="text-sm max-w-md">
               Run evaluations on your experiments and they'll appear here ranked by performance.
             </p>
@@ -83,7 +83,7 @@ export default function Leaderboard() {
           {chartData.length > 1 && (
             <Card className="border-border bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="font-mono text-sm flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
                   <TrendingUp className="w-4 h-4" /> Score Comparison
                 </CardTitle>
               </CardHeader>
@@ -178,7 +178,7 @@ export default function Leaderboard() {
 
                     <div className="flex gap-8 border-t md:border-t-0 md:border-l border-border/50 pt-3 md:pt-0 md:pl-6 shrink-0">
                       <div className="text-center">
-                        <div className="text-[9px] font-mono uppercase text-muted-foreground mb-1">
+                        <div className="text-[9px] uppercase text-muted-foreground mb-1 font-medium">
                           Faithfulness
                         </div>
                         <div

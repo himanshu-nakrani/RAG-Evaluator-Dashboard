@@ -70,13 +70,13 @@ export default function ExperimentDetail() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
             <FlaskConical className="w-8 h-8 text-primary" />
             {exp.name}
           </h1>
         </div>
         
-        <Button onClick={handleRunEval} disabled={createRun.isPending} className="font-mono shadow-md hover-elevate">
+        <Button onClick={handleRunEval} disabled={createRun.isPending} className="shadow-md hover-elevate">
           {createRun.isPending ? (
             <Activity className="w-4 h-4 mr-2 animate-spin" />
           ) : (
@@ -89,33 +89,33 @@ export default function ExperimentDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="col-span-1 border-border bg-card">
           <CardHeader className="pb-3 border-b border-border/50">
-            <CardTitle className="font-mono text-sm flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
               <Settings className="w-4 h-4" /> Configuration
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/50">
               <div className="p-4 flex justify-between items-center">
-                <span className="text-xs font-mono text-muted-foreground">Embedding</span>
-                <Badge variant="outline" className="font-mono">{exp.embeddingModel}</Badge>
+                <span className="text-xs text-muted-foreground font-medium">Embedding</span>
+                <Badge variant="outline">{exp.embeddingModel}</Badge>
               </div>
               <div className="p-4 flex justify-between items-center bg-muted/10">
-                <span className="text-xs font-mono text-muted-foreground">Retriever</span>
-                <Badge variant="outline" className="font-mono">{exp.retrieverType}</Badge>
+                <span className="text-xs text-muted-foreground font-medium">Retriever</span>
+                <Badge variant="outline">{exp.retrieverType}</Badge>
               </div>
               <div className="p-4 flex justify-between items-center">
-                <span className="text-xs font-mono text-muted-foreground">Chunk Size</span>
-                <span className="text-sm font-mono font-medium">{exp.chunkSize}</span>
+                <span className="text-xs text-muted-foreground font-medium">Chunk Size</span>
+                <span className="text-sm font-medium">{exp.chunkSize}</span>
               </div>
               <div className="p-4 flex justify-between items-center bg-muted/10">
-                <span className="text-xs font-mono text-muted-foreground">Overlap</span>
-                <span className="text-sm font-mono font-medium">{exp.chunkOverlap}</span>
+                <span className="text-xs text-muted-foreground font-medium">Overlap</span>
+                <span className="text-sm font-medium">{exp.chunkOverlap}</span>
               </div>
               <div className="p-4 flex justify-between items-center">
-                <span className="text-xs font-mono text-muted-foreground">Top K</span>
-                <span className="text-sm font-mono font-medium">{exp.topK}</span>
+                <span className="text-xs text-muted-foreground font-medium">Top K</span>
+                <span className="text-sm font-medium">{exp.topK}</span>
               </div>
-              <div className="p-4 text-xs font-mono text-muted-foreground flex flex-col gap-1 bg-muted/20">
+              <div className="p-4 text-xs text-muted-foreground flex flex-col gap-1 bg-muted/20 font-mono">
                 <div>Doc ID: {exp.documentId}</div>
                 <div>Questions ID: {exp.questionSetId}</div>
               </div>
@@ -127,7 +127,7 @@ export default function ExperimentDetail() {
           {chartData.length > 1 && (
             <Card className="border-border bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="font-mono text-sm flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 uppercase tracking-widest text-muted-foreground">
                   <BarChart2 className="w-4 h-4" /> Metric Trends
                 </CardTitle>
               </CardHeader>
@@ -203,8 +203,8 @@ export default function ExperimentDetail() {
                           </div>
                         </div>
                         <div className="text-center md:text-left hidden sm:block">
-                          <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">Latency</div>
-                          <div className="font-mono font-bold text-lg text-foreground">
+                          <div className="text-[10px] uppercase text-muted-foreground mb-1 font-medium">Latency</div>
+                          <div className="font-bold text-lg text-foreground">
                             {run.status === 'completed' && run.avgLatencyMs != null ? `${Math.round(run.avgLatencyMs)}ms` : '-'}
                           </div>
                         </div>

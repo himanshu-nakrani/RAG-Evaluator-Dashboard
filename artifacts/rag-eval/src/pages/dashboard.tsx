@@ -40,7 +40,7 @@ export default function Dashboard() {
     >
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Overview</h1>
-        <p className="text-muted-foreground mt-1 text-[15px]">High-level view of your evaluation metrics and runs.</p>
+        <p className="text-muted-foreground mt-1 text-sm">High-level view of your evaluation metrics and runs.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -53,7 +53,7 @@ export default function Dashboard() {
           >
             <Card className="bg-card shadow-sm border-border">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-[13px] font-medium text-muted-foreground">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
                 <stat.icon className="h-4 w-4 text-muted-foreground/40" />
@@ -69,9 +69,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="col-span-1 md:col-span-2 border-border bg-card shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-[16px] font-semibold">Recent Eval Runs</CardTitle>
+            <CardTitle className="text-base font-semibold">Recent Eval Runs</CardTitle>
             <Link href="/eval-runs">
-              <span className="text-[13px] text-primary hover:text-primary/80 cursor-pointer flex items-center gap-1 font-medium">
+              <span className="text-xs text-primary hover:text-primary/80 cursor-pointer flex items-center gap-1 font-medium">
                 View all <ArrowRight className="w-3 h-3" />
               </span>
             </Link>
@@ -92,18 +92,18 @@ export default function Dashboard() {
                         </div>
                       )}
                       <div>
-                        <div className="text-[14px] font-medium text-foreground flex items-center gap-2">
+                        <div className="text-sm font-medium text-foreground flex items-center gap-2">
                           <span>Run #{run.id}</span>
                           <span className="text-muted-foreground font-normal">—</span>
-                          <span className="text-muted-foreground font-normal text-[13px]">{run.status}</span>
+                          <span className="text-muted-foreground font-normal text-xs">{run.status}</span>
                         </div>
-                        <div className="text-[12px] text-muted-foreground mt-0.5">
+                        <div className="text-xs text-muted-foreground mt-0.5">
                           {new Date(run.createdAt).toLocaleString()}
                         </div>
                       </div>
                     </div>
                     <Link href={`/eval-runs/${run.id}`}>
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[13px] text-muted-foreground hover:text-foreground cursor-pointer font-medium">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-muted-foreground hover:text-foreground cursor-pointer font-medium">
                         Details
                       </span>
                     </Link>
@@ -112,9 +112,9 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="text-center py-10 text-muted-foreground px-6">
-                <p className="text-[14px]">No evaluation runs yet.</p>
+                <p className="text-sm">No evaluation runs yet.</p>
                 <Link href="/experiments">
-                  <span className="text-primary hover:underline cursor-pointer mt-2 inline-block text-[13px] font-medium">Create an experiment</span>
+                  <span className="text-primary hover:underline cursor-pointer mt-2 inline-block text-xs font-medium">Create an experiment</span>
                 </Link>
               </div>
             )}
@@ -123,11 +123,11 @@ export default function Dashboard() {
 
         <Card className="border-border bg-card shadow-sm">
           <CardHeader>
-            <CardTitle className="text-[16px] font-semibold">Best Metrics</CardTitle>
+            <CardTitle className="text-base font-semibold">Best Metrics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <div className="text-[13px] font-medium text-muted-foreground mb-1">Faithfulness</div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">Faithfulness</div>
               <div className="flex items-end gap-2">
                 <span className={`text-2xl font-semibold tracking-tight ${
                   !summary?.bestFaithfulness ? 'text-muted-foreground' :
@@ -137,12 +137,12 @@ export default function Dashboard() {
                   {summary?.bestFaithfulness != null ? summary.bestFaithfulness.toFixed(3) : '-'}
                 </span>
                 {summary?.bestFaithfulness != null && summary.bestFaithfulness >= 0.8 && (
-                  <span className="text-[12px] text-success font-medium mb-0.5">Top score</span>
+                  <span className="text-xs text-success font-medium mb-0.5">Top score</span>
                 )}
               </div>
             </div>
             <div>
-              <div className="text-[13px] font-medium text-muted-foreground mb-1">Context Recall</div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">Context Recall</div>
               <div className="flex items-end gap-2">
                 <span className={`text-2xl font-semibold tracking-tight ${
                   !summary?.bestContextRecall ? 'text-muted-foreground' :
@@ -152,12 +152,12 @@ export default function Dashboard() {
                   {summary?.bestContextRecall != null ? summary.bestContextRecall.toFixed(3) : '-'}
                 </span>
                 {summary?.bestContextRecall != null && summary.bestContextRecall >= 0.8 && (
-                  <span className="text-[12px] text-success font-medium mb-0.5">Top score</span>
+                  <span className="text-xs text-success font-medium mb-0.5">Top score</span>
                 )}
               </div>
             </div>
             <div>
-              <div className="text-[13px] font-medium text-muted-foreground mb-1">Avg Latency</div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">Avg Latency</div>
               <div className="flex items-end gap-2">
                 <span className="text-2xl font-semibold tracking-tight text-foreground">
                   {summary?.avgLatencyMs != null ? `${Math.round(summary.avgLatencyMs)}ms` : '-'}

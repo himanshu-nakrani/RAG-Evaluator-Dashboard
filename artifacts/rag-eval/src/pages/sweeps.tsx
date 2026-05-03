@@ -102,7 +102,7 @@ export default function Sweeps() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
             <Zap className="w-8 h-8 text-primary" />
             Parameter Sweeps
           </h1>
@@ -113,31 +113,31 @@ export default function Sweeps() {
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="font-mono">
+            <Button>
               <Plus className="w-4 h-4 mr-2" /> New Sweep
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[700px] border-border bg-card max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="font-mono">Create Parameter Sweep</DialogTitle>
+              <DialogTitle>Create Parameter Sweep</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-6 pt-4">
               <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase text-muted-foreground">Sweep Name</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Sweep Name</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Chunk Size Study v2"
-                  className="bg-background font-mono"
+                  className="bg-background"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4 border border-border p-4 rounded-lg bg-background/50">
                 <div className="space-y-2">
-                  <Label className="font-mono text-xs uppercase text-muted-foreground">Document</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Document</Label>
                   <Select value={documentId} onValueChange={setDocumentId} required>
-                    <SelectTrigger className="font-mono">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select Document" />
                     </SelectTrigger>
                     <SelectContent>
@@ -150,9 +150,9 @@ export default function Sweeps() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-mono text-xs uppercase text-muted-foreground">Question Set</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Question Set</Label>
                   <Select value={questionSetId} onValueChange={setQuestionSetId} required>
-                    <SelectTrigger className="font-mono">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select Set" />
                     </SelectTrigger>
                     <SelectContent>
@@ -167,15 +167,15 @@ export default function Sweeps() {
               </div>
 
               <div className="space-y-4 border border-border p-4 rounded-lg bg-background/50">
-                <h4 className="text-sm font-bold font-mono text-foreground flex items-center gap-2">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Grid3X3 className="w-4 h-4 text-primary" /> Sweep Dimensions
-                  <Badge variant="outline" className="ml-auto font-mono text-xs">
+                  <Badge variant="outline" className="ml-auto text-xs">
                     {totalCombinations} combination{totalCombinations !== 1 ? "s" : ""}
                   </Badge>
                 </h4>
 
                 <div>
-                  <Label className="font-mono text-xs text-muted-foreground mb-2 block">
+                  <Label className="text-xs text-muted-foreground mb-2 block font-medium">
                     Chunk Sizes (tokens)
                   </Label>
                   <div className="flex flex-wrap gap-2">
@@ -194,7 +194,7 @@ export default function Sweeps() {
                 </div>
 
                 <div>
-                  <Label className="font-mono text-xs text-muted-foreground mb-2 block">
+                  <Label className="text-xs text-muted-foreground mb-2 block font-medium">
                     Embedding Models
                   </Label>
                   <div className="flex flex-col gap-2">
@@ -213,7 +213,7 @@ export default function Sweeps() {
                 </div>
 
                 <div>
-                  <Label className="font-mono text-xs text-muted-foreground mb-2 block">
+                  <Label className="text-xs text-muted-foreground mb-2 block font-medium">
                     Retriever Types
                   </Label>
                   <div className="flex flex-wrap gap-4">
@@ -233,7 +233,7 @@ export default function Sweeps() {
 
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/50">
                   <div className="space-y-2">
-                    <Label className="font-mono text-xs text-muted-foreground">Top K</Label>
+                    <Label className="text-xs text-muted-foreground font-medium">Top K</Label>
                     <Input
                       type="number"
                       value={topK}
@@ -243,7 +243,7 @@ export default function Sweeps() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="font-mono text-xs text-muted-foreground">Chunk Overlap</Label>
+                    <Label className="text-xs text-muted-foreground font-medium">Chunk Overlap</Label>
                     <Input
                       type="number"
                       value={chunkOverlap}
@@ -259,7 +259,7 @@ export default function Sweeps() {
                 <Button
                   type="submit"
                   disabled={createSweep.isPending || totalCombinations === 0}
-                  className="font-mono w-full sm:w-auto"
+                  className="w-full sm:w-auto"
                 >
                   {createSweep.isPending
                     ? "Launching..."
@@ -281,11 +281,11 @@ export default function Sweeps() {
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center mt-8">
           <div className="flex flex-col items-center text-muted-foreground">
             <Zap className="w-12 h-12 mb-4 opacity-20" />
-            <h3 className="text-lg font-medium font-mono mb-2">No sweeps yet</h3>
+            <h3 className="text-lg font-medium mb-2">No sweeps yet</h3>
             <p className="text-sm mb-6 max-w-md">
               Create a parameter sweep to automatically generate and run a grid of experiments.
             </p>
-            <Button onClick={() => setOpen(true)} variant="outline" className="font-mono">
+            <Button onClick={() => setOpen(true)} variant="outline">
               <Plus className="w-4 h-4 mr-2" /> Create First Sweep
             </Button>
           </div>
@@ -305,7 +305,7 @@ export default function Sweeps() {
                     <div className="flex-1 p-5">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h3 className="text-lg font-mono font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                          <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
                             <Zap className="w-5 h-5 text-primary" />
                             {sweep.name}
                           </h3>

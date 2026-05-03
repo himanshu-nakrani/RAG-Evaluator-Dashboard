@@ -54,7 +54,7 @@ function TemplateCard({
             </Badge>
           )}
           {template.category && !template.isPreset && (
-            <Badge variant="outline" className="font-mono text-[9px] shrink-0">
+            <Badge variant="outline" className="text-[9px] shrink-0">
               {template.category}
             </Badge>
           )}
@@ -232,28 +232,28 @@ export default function TemplatesLibrary() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
             <BookMarked className="w-8 h-8 text-primary" />
             Template Library
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm font-mono">
+          <p className="text-muted-foreground mt-1 text-sm">
             Pre-built and custom parameter sweep templates
           </p>
         </div>
 
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="font-mono">
+            <Button>
               <Plus className="w-4 h-4 mr-2" /> New Template
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[480px] border-border bg-card">
             <DialogHeader>
-              <DialogTitle className="font-mono">Create Custom Template</DialogTitle>
+              <DialogTitle>Create Custom Template</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs uppercase text-muted-foreground">Name *</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Name *</Label>
                 <Input
                   required
                   value={newName}
@@ -263,58 +263,58 @@ export default function TemplatesLibrary() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs uppercase text-muted-foreground">Description</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Description</Label>
                 <Textarea
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   placeholder="What makes this template special?"
-                  className="font-mono bg-background text-sm min-h-[70px] resize-none"
+                  className="bg-background text-sm min-h-[70px] resize-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="font-mono text-xs uppercase text-muted-foreground">
+                  <Label className="text-xs font-medium text-muted-foreground">
                     Chunk Sizes (comma-sep)
                   </Label>
                   <Input
                     value={newChunkSizes}
                     onChange={(e) => setNewChunkSizes(e.target.value)}
                     placeholder="256, 512"
-                    className="font-mono bg-background text-sm"
+                    className="bg-background text-sm font-mono"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="font-mono text-xs uppercase text-muted-foreground">Top-K</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Top-K</Label>
                   <Input
                     type="number"
                     value={newTopK}
                     onChange={(e) => setNewTopK(e.target.value)}
                     min={1}
                     max={20}
-                    className="font-mono bg-background text-sm"
+                    className="bg-background text-sm font-mono"
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs uppercase text-muted-foreground">
+                <Label className="text-xs font-medium text-muted-foreground">
                   Embedding Models (comma-sep)
                 </Label>
                 <Input
                   value={newModels}
                   onChange={(e) => setNewModels(e.target.value)}
                   placeholder="text-embedding-3-small"
-                  className="font-mono bg-background text-sm"
+                  className="bg-background text-sm font-mono"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-mono text-xs uppercase text-muted-foreground">
+                <Label className="text-xs font-medium text-muted-foreground">
                   Retriever Types (comma-sep)
                 </Label>
                 <Input
                   value={newRetrievers}
                   onChange={(e) => setNewRetrievers(e.target.value)}
                   placeholder="similarity, mmr"
-                  className="font-mono bg-background text-sm"
+                  className="bg-background text-sm font-mono"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2 border-t border-border">
@@ -322,11 +322,10 @@ export default function TemplatesLibrary() {
                   type="button"
                   variant="ghost"
                   onClick={() => setCreateOpen(false)}
-                  className="font-mono"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="font-mono" disabled={createTemplate.isPending}>
+                <Button type="submit" disabled={createTemplate.isPending}>
                   {createTemplate.isPending ? "Creating…" : "Create Template"}
                 </Button>
               </div>
@@ -397,12 +396,12 @@ export default function TemplatesLibrary() {
       <Dialog open={useOpen} onOpenChange={setUseOpen}>
         <DialogContent className="sm:max-w-[420px] border-border bg-card">
           <DialogHeader>
-            <DialogTitle className="font-mono">
+            <DialogTitle>
               Launch Sweep — {activeTemplate?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <p className="text-xs text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground">
               This will create{" "}
               <strong>
                 {activeTemplate
@@ -414,7 +413,7 @@ export default function TemplatesLibrary() {
               experiments and run all evaluations automatically.
             </p>
             <div className="space-y-1.5">
-              <Label className="font-mono text-xs uppercase text-muted-foreground">Document ID</Label>
+              <Label className="text-xs uppercase text-muted-foreground">Document ID</Label>
               <Input
                 type="number"
                 value={selectedDoc}
@@ -436,13 +435,12 @@ export default function TemplatesLibrary() {
               />
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t border-border">
-              <Button variant="ghost" onClick={() => setUseOpen(false)} className="font-mono">
+              <Button variant="ghost" onClick={() => setUseOpen(false)}>
                 Cancel
               </Button>
               <Button
                 onClick={handleLaunchSweep}
                 disabled={!selectedDoc || !selectedQSet || createSweep.isPending}
-                className="font-mono"
               >
                 {createSweep.isPending ? "Launching…" : "Launch Sweep"}
               </Button>

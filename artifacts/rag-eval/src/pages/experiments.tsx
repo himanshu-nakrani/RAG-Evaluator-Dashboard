@@ -81,29 +81,29 @@ export default function Experiments() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">Experiments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Experiments</h1>
           <p className="text-muted-foreground mt-1">Configure RAG pipelines and run evaluations against them.</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="font-mono">
+            <Button>
               <Plus className="w-4 h-4 mr-2" /> New Experiment
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[700px] border-border bg-card max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="font-mono">Create RAG Experiment</DialogTitle>
+              <DialogTitle>Create RAG Experiment</DialogTitle>
             </DialogHeader>
             
             {!isReadyToCreate && !docsLoading && !qsLoading ? (
-              <div className="p-6 bg-destructive/10 text-destructive text-sm rounded-md font-mono mt-4">
+              <div className="p-6 bg-destructive/10 text-destructive text-sm rounded-md mt-4">
                 You need at least one Document and one Question Set before creating an experiment.
               </div>
             ) : (
               <form onSubmit={handleCreate} className="space-y-6 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="font-mono text-xs uppercase text-muted-foreground">Experiment Name</Label>
+                  <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">Experiment Name</Label>
                   <Input 
                     id="name" 
                     value={name} 
@@ -116,11 +116,11 @@ export default function Experiments() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-border p-4 rounded-lg bg-background/50">
                   <div className="space-y-2">
-                    <Label className="font-mono text-xs uppercase text-muted-foreground flex items-center gap-2">
+                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <FileText className="w-3 h-3" /> Source Document
                     </Label>
                     <Select value={documentId} onValueChange={setDocumentId} required>
-                      <SelectTrigger className="font-mono">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select Document" />
                       </SelectTrigger>
                       <SelectContent>
@@ -132,11 +132,11 @@ export default function Experiments() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label className="font-mono text-xs uppercase text-muted-foreground flex items-center gap-2">
+                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <MessageSquare className="w-3 h-3" /> Question Set
                     </Label>
                     <Select value={questionSetId} onValueChange={setQuestionSetId} required>
-                      <SelectTrigger className="font-mono">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select Question Set" />
                       </SelectTrigger>
                       <SelectContent>
@@ -149,24 +149,24 @@ export default function Experiments() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-sm font-bold font-mono border-b border-border pb-2 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold border-b border-border pb-2 flex items-center gap-2">
                     <Settings className="w-4 h-4" /> Pipeline Configuration
                   </h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="chunkSize" className="font-mono text-xs text-muted-foreground">Chunk Size (tokens)</Label>
+                      <Label htmlFor="chunkSize" className="text-xs text-muted-foreground font-medium">Chunk Size (tokens)</Label>
                       <Input id="chunkSize" type="number" value={chunkSize} onChange={(e) => setChunkSize(e.target.value)} className="bg-background font-mono" required />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="chunkOverlap" className="font-mono text-xs text-muted-foreground">Chunk Overlap</Label>
+                      <Label htmlFor="chunkOverlap" className="text-xs text-muted-foreground font-medium">Chunk Overlap</Label>
                       <Input id="chunkOverlap" type="number" value={chunkOverlap} onChange={(e) => setChunkOverlap(e.target.value)} className="bg-background font-mono" required />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label className="font-mono text-xs text-muted-foreground">Embedding Model</Label>
+                      <Label className="text-xs text-muted-foreground font-medium">Embedding Model</Label>
                       <Select value={embeddingModel} onValueChange={setEmbeddingModel} required>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -178,9 +178,9 @@ export default function Experiments() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="font-mono text-xs text-muted-foreground">Retriever Type</Label>
+                      <Label className="text-xs text-muted-foreground font-medium">Retriever Type</Label>
                       <Select value={retrieverType} onValueChange={setRetrieverType} required>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -192,14 +192,14 @@ export default function Experiments() {
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="topK" className="font-mono text-xs text-muted-foreground">Top K (Context size)</Label>
+                      <Label htmlFor="topK" className="text-xs text-muted-foreground font-medium">Top K (Context size)</Label>
                       <Input id="topK" type="number" value={topK} onChange={(e) => setTopK(e.target.value)} className="bg-background font-mono" required />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-border">
-                  <Button type="submit" disabled={createExperiment.isPending} className="font-mono w-full sm:w-auto">
+                  <Button type="submit" disabled={createExperiment.isPending} className="w-full sm:w-auto">
                     {createExperiment.isPending ? "Creating..." : "Save Experiment Config"}
                   </Button>
                 </div>
@@ -217,9 +217,9 @@ export default function Experiments() {
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center mt-8">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
             <FlaskConical className="w-12 h-12 mb-4 opacity-20" />
-            <h3 className="text-lg font-medium font-mono mb-2">No experiments yet</h3>
+            <h3 className="text-lg font-medium mb-2">No experiments yet</h3>
             <p className="text-sm mb-6 max-w-md">Define a pipeline configuration to begin running evaluations and comparing results.</p>
-            <Button onClick={() => setOpen(true)} variant="outline" className="font-mono" disabled={!isReadyToCreate && !docsLoading && !qsLoading}>
+            <Button onClick={() => setOpen(true)} variant="outline" disabled={!isReadyToCreate && !docsLoading && !qsLoading}>
               <Plus className="w-4 h-4 mr-2" /> Create First Experiment
             </Button>
           </div>
@@ -239,7 +239,7 @@ export default function Experiments() {
                     <div className="flex-1 p-5">
                       <div className="flex justify-between items-start gap-4">
                         <div>
-                          <h3 className="text-lg font-mono font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                          <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
                             <FlaskConical className="w-5 h-5 text-primary" />
                             {exp.name}
                           </h3>

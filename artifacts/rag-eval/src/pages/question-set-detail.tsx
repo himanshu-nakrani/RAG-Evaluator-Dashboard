@@ -103,7 +103,7 @@ export default function QuestionSetDetail() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
             <MessageSquare className="w-8 h-8 text-primary" />
             {set.name}
           </h1>
@@ -113,50 +113,49 @@ export default function QuestionSetDetail() {
         <div className="flex gap-2">
           <Dialog open={importOpen} onOpenChange={setImportOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="font-mono">
+              <Button variant="outline">
                 <Upload className="w-4 h-4 mr-2" /> Import CSV
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] border-border bg-card">
               <DialogHeader>
-                <DialogTitle className="font-mono flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" /> Import Questions from CSV
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleImport} className="space-y-4 pt-2">
-                <div className="bg-muted/30 border border-border rounded-lg p-3 text-xs font-mono text-muted-foreground space-y-1">
+                <div className="bg-muted/30 border border-border rounded-lg p-3 text-xs text-muted-foreground space-y-1">
                   <p className="font-semibold text-foreground">Expected CSV format:</p>
                   <p>• Required column: <span className="text-primary">text</span> or <span className="text-primary">question</span></p>
                   <p>• Optional column: <span className="text-primary">ground_truth</span>, <span className="text-primary">answer</span></p>
                   <p className="pt-1 text-[10px] opacity-70">text,ground_truth<br />"What is X?","X is..."</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-mono text-xs uppercase text-muted-foreground">Upload .csv File</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Upload .csv File</Label>
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept=".csv,text/csv"
                     onChange={handleImportFile}
-                    className="block text-sm text-muted-foreground file:mr-3 file:py-1 file:px-3 file:rounded file:border file:border-border file:text-xs file:font-mono file:bg-background file:text-foreground cursor-pointer"
+                    className="block text-sm text-muted-foreground file:mr-3 file:py-1 file:px-3 file:rounded file:border file:border-border file:text-xs file:bg-background file:text-foreground cursor-pointer"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-mono text-xs uppercase text-muted-foreground">Or paste CSV text</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Or paste CSV text</Label>
                   <Textarea
                     value={csvText}
                     onChange={(e) => setCsvText(e.target.value)}
                     placeholder={"text,ground_truth\n\"What is RAG?\",\"RAG stands for...\""}
-                    className="bg-background font-mono text-xs min-h-[120px] resize-none"
+                    className="bg-background text-xs min-h-[120px] resize-none font-mono"
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                  <Button type="button" variant="ghost" className="font-mono" onClick={() => setImportOpen(false)}>
+                  <Button type="button" variant="ghost" onClick={() => setImportOpen(false)}>
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     disabled={importQuestions.isPending || !csvText.trim()}
-                    className="font-mono"
                   >
                     {importQuestions.isPending ? "Importing..." : "Import Questions"}
                   </Button>
@@ -167,17 +166,17 @@ export default function QuestionSetDetail() {
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="font-mono">
+              <Button>
                 <Plus className="w-4 h-4 mr-2" /> Add Question
               </Button>
             </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] border-border bg-card">
             <DialogHeader>
-              <DialogTitle className="font-mono">Add Question to Set</DialogTitle>
+              <DialogTitle>Add Question to Set</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAdd} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="text" className="font-mono text-xs uppercase text-muted-foreground">Question Text</Label>
+                <Label htmlFor="text" className="text-xs font-medium text-muted-foreground">Question Text</Label>
                 <Textarea 
                   id="text" 
                   value={text} 
@@ -188,7 +187,7 @@ export default function QuestionSetDetail() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="groundTruth" className="font-mono text-xs uppercase text-muted-foreground">Ground Truth Answer (Optional)</Label>
+                <Label htmlFor="groundTruth" className="text-xs font-medium text-muted-foreground">Ground Truth Answer (Optional)</Label>
                 <Textarea 
                   id="groundTruth" 
                   value={groundTruth} 
@@ -199,7 +198,7 @@ export default function QuestionSetDetail() {
                 <p className="text-[10px] text-muted-foreground font-mono">Used to evaluate Context Recall metrics.</p>
               </div>
               <div className="flex justify-end pt-2">
-                <Button type="submit" disabled={addQuestion.isPending} className="font-mono">
+                <Button type="submit" disabled={addQuestion.isPending}>
                   {addQuestion.isPending ? "Adding..." : "Add Question"}
                 </Button>
               </div>
@@ -213,16 +212,16 @@ export default function QuestionSetDetail() {
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center mt-8">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
             <HelpCircle className="w-12 h-12 mb-4 opacity-20" />
-            <h3 className="text-lg font-medium font-mono mb-2">No questions in this set</h3>
+            <h3 className="text-lg font-medium mb-2">No questions in this set</h3>
             <p className="text-sm mb-6 max-w-md">Add specific questions you want your RAG pipeline to be able to answer correctly.</p>
-            <Button onClick={() => setOpen(true)} variant="outline" className="font-mono">
+            <Button onClick={() => setOpen(true)} variant="outline">
               <Plus className="w-4 h-4 mr-2" /> Add First Question
             </Button>
           </div>
         </Card>
       ) : (
         <div className="space-y-4 mt-8">
-          <div className="font-mono text-sm text-muted-foreground uppercase tracking-wider mb-2 border-b border-border pb-2">
+          <div className="text-sm text-muted-foreground uppercase tracking-wider mb-2 border-b border-border pb-2 font-medium">
             {set.questions.length} Questions
           </div>
           {set.questions.map((q, idx) => (
@@ -245,7 +244,7 @@ export default function QuestionSetDetail() {
                   
                   {q.groundTruth && (
                     <div className="ml-12 pl-4 border-l-2 border-primary/30 py-1">
-                      <div className="text-[10px] font-mono text-primary uppercase mb-1">Ground Truth</div>
+                      <div className="text-[10px] text-primary uppercase mb-1 font-medium">Ground Truth</div>
                       <div className="text-sm text-muted-foreground italic bg-muted/30 p-3 rounded-md font-mono">
                         {q.groundTruth}
                       </div>

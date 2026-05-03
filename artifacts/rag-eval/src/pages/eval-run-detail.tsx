@@ -58,7 +58,7 @@ function ResultRow({ result }: { result: any }) {
         <div className="flex gap-6 w-full md:w-auto pl-6 md:pl-0 pt-2 md:pt-0 border-t md:border-t-0 border-border/30">
           <div className="text-center w-20">
             <div className="text-[10px] text-muted-foreground mb-1 font-medium">Faithful</div>
-            <div className={`font-mono font-bold text-sm ${getScoreColor(result.faithfulness)}`}>
+            <div className={`font-bold text-sm ${getScoreColor(result.faithfulness)}`}>
               {result.faithfulness != null ? result.faithfulness.toFixed(2) : '-'}
             </div>
           </div>
@@ -87,7 +87,7 @@ function ResultRow({ result }: { result: any }) {
           >
             <div className="p-6 pt-0 bg-muted/10 grid grid-cols-1 lg:grid-cols-2 gap-6 border-t border-border/50">
               <div className="space-y-2">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-2">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-2">
                   Generated Answer
                   {result.faithfulness != null && result.faithfulness < 0.5 && (
                     <Badge variant="outline" className="text-[9px] border-destructive text-destructive h-4 px-1 py-0 rounded-sm ml-auto">Low Faithfulness</Badge>
@@ -98,7 +98,7 @@ function ResultRow({ result }: { result: any }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-2">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-2">
                   Retrieved Context
                   {result.contextRecall != null && result.contextRecall < 0.5 && (
                     <Badge variant="outline" className="text-[9px] border-warning text-warning h-4 px-1 py-0 rounded-sm ml-auto">Low Recall</Badge>
@@ -145,7 +145,7 @@ export default function EvalRunDetail() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
-      <div className="flex items-center gap-4 text-sm font-mono text-muted-foreground mb-4">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
         <Link href={`/experiments/${run.experimentId}`}>
           <span className="flex items-center hover:text-foreground cursor-pointer transition-colors">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Experiment
@@ -155,13 +155,13 @@ export default function EvalRunDetail() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
             Run #{run.id}
             {isRunning && <Activity className="w-6 h-6 text-warning animate-pulse" />}
             {run.status === 'completed' && <CheckCircle2 className="w-6 h-6 text-success" />}
             {isFailed && <XCircle className="w-6 h-6 text-destructive" />}
           </h1>
-          <div className="text-sm font-mono text-muted-foreground mt-2 flex items-center gap-4">
+          <div className="text-sm text-muted-foreground mt-2 flex items-center gap-4">
             <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {format(new Date(run.createdAt), 'MMM d, yyyy h:mm a')}</span>
             {run.completedAt && (
               <span>Completed: {format(new Date(run.completedAt), 'h:mm:ss a')}</span>
@@ -172,7 +172,7 @@ export default function EvalRunDetail() {
           <Button
             variant="outline"
             size="sm"
-            className="font-mono shrink-0"
+            className="shrink-0"
             onClick={() => exportRunCsv(run)}
           >
             <Download className="w-4 h-4 mr-2" /> Export CSV
@@ -183,12 +183,12 @@ export default function EvalRunDetail() {
       {isRunning && (
         <Card className="border-warning/50 bg-warning/5">
           <CardContent className="p-6">
-            <div className="flex justify-between font-mono text-sm mb-2 text-warning">
+            <div className="flex justify-between text-sm mb-2 text-warning">
               <span>Evaluation in progress...</span>
               <span>{progress}%</span>
             </div>
             <Progress value={progress} className="h-2 bg-warning/20" />
-            <p className="text-xs font-mono text-muted-foreground mt-4 opacity-70">
+            <p className="text-xs text-muted-foreground mt-4 opacity-70">
               Evaluating pipeline against question set. This process runs inference and LLM-as-a-judge metrics.
             </p>
           </CardContent>
@@ -200,8 +200,8 @@ export default function EvalRunDetail() {
           <CardContent className="p-6 flex items-start gap-4">
             <AlertTriangle className="w-6 h-6 text-destructive shrink-0" />
             <div>
-              <h3 className="font-mono font-bold text-destructive">Evaluation Run Failed</h3>
-              <p className="text-sm font-mono text-muted-foreground mt-1">
+              <h3 className="font-semibold text-destructive">Evaluation Run Failed</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 The pipeline encountered an error during evaluation. Check experiment configuration and document accessibility.
               </p>
             </div>
@@ -213,8 +213,8 @@ export default function EvalRunDetail() {
         <div className="grid grid-cols-3 gap-4">
           <Card className="bg-card border-border">
             <CardContent className="p-4 md:p-6 text-center">
-              <div className="text-xs font-mono uppercase text-muted-foreground mb-2">Avg Faithfulness</div>
-              <div className={`text-3xl font-bold font-mono ${
+              <div className="text-xs font-medium uppercase text-muted-foreground mb-2">Avg Faithfulness</div>
+              <div className={`text-3xl font-bold ${
                 !run.avgFaithfulness ? 'text-muted-foreground' :
                 run.avgFaithfulness >= 0.8 ? 'metric-green' :
                 run.avgFaithfulness >= 0.5 ? 'metric-amber' : 'metric-red'
@@ -225,8 +225,8 @@ export default function EvalRunDetail() {
           </Card>
           <Card className="bg-card border-border">
             <CardContent className="p-4 md:p-6 text-center">
-              <div className="text-xs font-mono uppercase text-muted-foreground mb-2">Avg Context Recall</div>
-              <div className={`text-3xl font-bold font-mono ${
+              <div className="text-xs font-medium uppercase text-muted-foreground mb-2">Avg Context Recall</div>
+              <div className={`text-3xl font-bold ${
                 !run.avgContextRecall ? 'text-muted-foreground' :
                 run.avgContextRecall >= 0.8 ? 'metric-green' :
                 run.avgContextRecall >= 0.5 ? 'metric-amber' : 'metric-red'
@@ -237,7 +237,7 @@ export default function EvalRunDetail() {
           </Card>
           <Card className="bg-card border-border">
             <CardContent className="p-4 md:p-6 text-center">
-              <div className="text-xs font-mono uppercase text-muted-foreground mb-2">Avg Latency</div>
+              <div className="text-xs font-medium uppercase text-muted-foreground mb-2">Avg Latency</div>
               <div className="text-3xl font-bold font-mono text-foreground">
                 {run.avgLatencyMs != null ? `${Math.round(run.avgLatencyMs)}ms` : (isRunning ? '...' : '-')}
               </div>
@@ -248,7 +248,7 @@ export default function EvalRunDetail() {
 
       {run.results && run.results.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-muted-foreground mb-4 pl-2 border-l-2 border-primary">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4 pl-2 border-l-2 border-primary">
             Per-Question Breakdown
           </h3>
           <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm">

@@ -66,19 +66,19 @@ export default function Documents() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">Documents</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Documents</h1>
           <p className="text-muted-foreground mt-1">Manage the corpus text available for retrieval experiments.</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="font-mono">
+            <Button>
               <Plus className="w-4 h-4 mr-2" /> Upload Document
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] border-border bg-card">
             <DialogHeader>
-              <DialogTitle className="font-mono">Upload New Document</DialogTitle>
+              <DialogTitle>Upload New Document</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 pt-4">
               <div className="space-y-2">
@@ -88,7 +88,7 @@ export default function Documents() {
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
                   placeholder="e.g., ACME Corp Q3 Financials"
-                  className="bg-background font-mono"
+                  className="bg-background"
                   required
                 />
               </div>
@@ -104,7 +104,7 @@ export default function Documents() {
                 />
               </div>
               <div className="flex justify-end pt-2">
-                <Button type="submit" disabled={createDocument.isPending} className="font-mono">
+                <Button type="submit" disabled={createDocument.isPending}>
                   {createDocument.isPending ? "Uploading..." : "Upload Document"}
                 </Button>
               </div>
@@ -121,9 +121,9 @@ export default function Documents() {
         <Card className="border-dashed border-2 border-border bg-transparent p-12 text-center">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
             <HardDrive className="w-12 h-12 mb-4 opacity-20" />
-            <h3 className="text-lg font-medium font-mono mb-2">No documents found</h3>
+            <h3 className="text-lg font-medium mb-2">No documents found</h3>
             <p className="text-sm mb-6 max-w-md">Upload text documents to serve as the knowledge base for your RAG retrieval experiments.</p>
-            <Button onClick={() => setOpen(true)} variant="outline" className="font-mono">
+            <Button onClick={() => setOpen(true)} variant="outline">
               <Plus className="w-4 h-4 mr-2" /> Add First Document
             </Button>
           </div>
@@ -140,7 +140,7 @@ export default function Documents() {
               <Card className="hover-elevate bg-card border-border flex flex-col h-full relative group transition-colors hover:border-primary/50">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start gap-2">
-                    <CardTitle className="text-lg font-mono leading-tight truncate" title={doc.name}>
+                    <CardTitle className="text-base font-semibold leading-tight truncate" title={doc.name}>
                       <FileText className="w-4 h-4 inline-block mr-2 text-primary" />
                       {doc.name}
                     </CardTitle>
@@ -156,7 +156,7 @@ export default function Documents() {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1">
-                  <p className="text-xs text-muted-foreground font-mono line-clamp-3 leading-relaxed opacity-70">
+                  <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed opacity-70">
                     {doc.content}
                   </p>
                 </CardContent>

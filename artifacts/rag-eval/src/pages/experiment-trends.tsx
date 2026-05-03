@@ -119,7 +119,7 @@ export default function ExperimentTrends() {
       {chartData.length > 1 ? (
         <Card className="border-border bg-card">
           <CardHeader className="pb-2">
-            <CardTitle className="font-mono text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <TrendingUp className="w-3 h-3" /> Metrics Over Runs
             </CardTitle>
           </CardHeader>
