@@ -38,6 +38,21 @@ RAG Evaluation Dashboard — a developer tool for ML engineers to test retrieval
 - `eval_runs` — evaluation run results (avg_faithfulness, avg_context_recall, avg_latency_ms)
 - `eval_results` — per-question results with retrieved context and generated answers
 
+## UI Features
+
+- **Dark Mode** — system preference detection + manual toggle (Moon/Sun icon in sidebar footer). Theme stored in `localStorage`. CSS vars defined in `index.css` `.dark` class.
+- **Theme Context** — `src/contexts/theme-context.tsx` provides `useTheme()` hook with `theme`, `setTheme`, `resolvedTheme`.
+- **Keyboard Shortcuts** — `src/hooks/use-keyboard-shortcut.ts` hook. `⌘N` = new item, `⌘K` = focus search, `?` = shortcuts panel, `Esc` = clear search. Shortcuts panel in sidebar footer.
+- **Search & Filter** — client-side live search on all list pages (documents, experiments, question-sets, sweeps, leaderboard). `useMemo` filtering. `⌘K` hint in placeholder.
+- **Sort Controls** — sort dropdown on all list pages. Options vary by page (newest/oldest, name A-Z, best score, most runs, etc.).
+- **Pagination** — 10-12 items per page on all list pages using shadcn `Pagination` component. Shows "X of Y" count.
+- **Bulk Actions** — multi-select checkboxes on Documents and Experiments pages. Floating action bar with bulk delete. Single AlertDialog confirmation.
+- **Tooltips** — `<FieldTooltip>` component using Radix `Tooltip` on all technical form fields (Chunk Size, Chunk Overlap, Embedding Model, Retriever Type, Top K) in Experiments and Sweeps dialogs.
+- **Status Filter Chips** — Sweeps page has pill filter chips for All / Running / Completed / Pending with live counts.
+- **Export CSV** — Leaderboard has "Export CSV" button. Eval run detail already had CSV export.
+- **Error Messages** — `parseApiError()` helper in each CRUD page maps common error patterns (duplicate name, not found, network) to human-readable messages. Inline validation errors on required form fields.
+- **Accessibility** — `aria-label` on all icon-only buttons, `aria-current="page"` on active nav, `role="list"/"listitem"` on card grids, `aria-hidden` on decorative icons, `aria-live` on bulk action bar.
+
 ## Notes
 
 - Evaluation is simulated server-side with realistic metrics based on config parameters
