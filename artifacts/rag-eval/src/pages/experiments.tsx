@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useListExperiments, useCreateExperiment, useListDocuments, useListQuestionSets, useDeleteExperiment, getListExperimentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useToast } from "@/hooks/use-toast";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
+import { useDebounce } from "@/hooks/use-debounce";
 import { FlaskConical, Plus, Trash2, ArrowRight, Settings, FileText, MessageSquare, Search, X, SortAsc, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,10 +75,20 @@ export default function Experiments() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
+  const [sortBy, setSortBy] = useState(() => new URLSearchParams(window.location.search).get("sort") ?? "newest");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(1);
+
+  const debouncedSearch = useDebounce(searchQuery);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (sortBy !== "newest") params.set("sort", sortBy);
+    const qs = params.toString();
+    history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+  }, [searchQuery, sortBy]);
 
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -91,8 +102,8 @@ export default function Experiments() {
 
   const filtered = useMemo(() => {
     let list = [...(experiments ?? [])];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (e) =>
           e.name.toLowerCase().includes(q) ||
@@ -109,7 +120,7 @@ export default function Experiments() {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
     return list;
-  }, [experiments, searchQuery, sortBy]);
+  }, [experiments, debouncedSearch, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(page, totalPages);
@@ -447,6 +458,18 @@ export default function Experiments() {
               <SelectItem value="most-runs">Most runs</SelectItem>
             </SelectContent>
           </Select>
+          {(searchQuery || sortBy !== "newest") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setSearchQuery(""); setSortBy("newest"); setPage(1); }}
+              className="shrink-0 text-muted-foreground hover:text-foreground text-xs h-9 px-3"
+              aria-label="Clear all filters"
+            >
+              <X className="w-3 h-3 mr-1" aria-hidden="true" />
+              Clear
+            </Button>
+          )}
         </div>
       )}
 

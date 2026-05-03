@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import {
   useListSweeps,
   useCreateSweep,
@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useToast } from "@/hooks/use-toast";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Zap, Plus, ArrowRight, Activity, CheckCircle2, Clock, Grid3X3, Search, X, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -84,9 +85,19 @@ export default function Sweeps() {
   const [topK, setTopK] = useState("5");
   const [chunkOverlap, setChunkOverlap] = useState("50");
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => (new URLSearchParams(window.location.search).get("status") as StatusFilter) ?? "all");
   const [page, setPage] = useState(1);
+
+  const debouncedSearch = useDebounce(searchQuery);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    const qs = params.toString();
+    history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+  }, [searchQuery, statusFilter]);
 
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -106,15 +117,15 @@ export default function Sweeps() {
 
   const filtered = useMemo(() => {
     let list = [...(sweeps ?? [])];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter((s) => s.name.toLowerCase().includes(q));
     }
     if (statusFilter !== "all") {
       list = list.filter((s) => s.status === statusFilter);
     }
     return list;
-  }, [sweeps, searchQuery, statusFilter]);
+  }, [sweeps, debouncedSearch, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(page, totalPages);
@@ -386,6 +397,18 @@ export default function Sweeps() {
               );
             })}
           </div>
+          {(searchQuery || statusFilter !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setSearchQuery(""); setStatusFilter("all"); setPage(1); }}
+              className="shrink-0 text-muted-foreground hover:text-foreground text-xs h-9 px-3"
+              aria-label="Clear all filters"
+            >
+              <X className="w-3 h-3 mr-1" aria-hidden="true" />
+              Clear
+            </Button>
+          )}
         </div>
       )}
 

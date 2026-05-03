@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useGetLeaderboard, getGetLeaderboardQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, FlaskConical, ArrowRight, TrendingUp, Download, Search, X, SortAsc } from "lucide-react";
 import { Link } from "wouter";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   BarChart,
   Bar,
@@ -64,8 +65,17 @@ export default function Leaderboard() {
     query: { queryKey: getGetLeaderboardQueryKey(), refetchInterval: 10000 },
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("rank");
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
+  const [sortBy, setSortBy] = useState(() => new URLSearchParams(window.location.search).get("sort") ?? "rank");
+  const debouncedSearch = useDebounce(searchQuery);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (sortBy !== "rank") params.set("sort", sortBy);
+    const qs = params.toString();
+    history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+  }, [searchQuery, sortBy]);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const focusSearch = useCallback(() => searchRef.current?.focus(), []);
@@ -76,8 +86,8 @@ export default function Leaderboard() {
 
   const filteredEntries = useMemo(() => {
     let list = [...(data?.entries ?? [])];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (e) =>
           e.experimentName.toLowerCase().includes(q) ||
@@ -168,6 +178,18 @@ export default function Leaderboard() {
               <SelectItem value="name-asc">Name A–Z</SelectItem>
             </SelectContent>
           </Select>
+          {(searchQuery || sortBy !== "rank") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setSearchQuery(""); setSortBy("rank"); }}
+              className="shrink-0 text-muted-foreground hover:text-foreground text-xs h-9 px-3"
+              aria-label="Clear all filters"
+            >
+              <X className="w-3 h-3 mr-1" aria-hidden="true" />
+              Clear
+            </Button>
+          )}
         </div>
       )}
 

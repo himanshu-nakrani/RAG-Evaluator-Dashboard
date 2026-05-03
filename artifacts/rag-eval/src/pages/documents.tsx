@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useListDocuments, useCreateDocument, useDeleteDocument, getListDocumentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useToast } from "@/hooks/use-toast";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
+import { useDebounce } from "@/hooks/use-debounce";
 import { FileText, Plus, Trash2, HardDrive, Search, X, SortAsc } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,10 +56,20 @@ export default function Documents() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
+  const [sortBy, setSortBy] = useState(() => new URLSearchParams(window.location.search).get("sort") ?? "newest");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(1);
+
+  const debouncedSearch = useDebounce(searchQuery);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (sortBy !== "newest") params.set("sort", sortBy);
+    const qs = params.toString();
+    history.replaceState(null, "", qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+  }, [searchQuery, sortBy]);
 
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -73,8 +84,8 @@ export default function Documents() {
 
   const filtered = useMemo(() => {
     let list = [...(documents ?? [])];
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter((d) => d.name.toLowerCase().includes(q));
     }
     list.sort((a, b) => {
@@ -84,7 +95,7 @@ export default function Documents() {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
     return list;
-  }, [documents, searchQuery, sortBy]);
+  }, [documents, debouncedSearch, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(page, totalPages);
@@ -278,6 +289,18 @@ export default function Documents() {
               <SelectItem value="name-desc">Name Z–A</SelectItem>
             </SelectContent>
           </Select>
+          {(searchQuery || sortBy !== "newest") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setSearchQuery(""); setSortBy("newest"); setPage(1); }}
+              className="shrink-0 text-muted-foreground hover:text-foreground text-xs h-9 px-3"
+              aria-label="Clear all filters"
+            >
+              <X className="w-3 h-3 mr-1" aria-hidden="true" />
+              Clear
+            </Button>
+          )}
         </div>
       )}
 
