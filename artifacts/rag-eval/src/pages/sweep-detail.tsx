@@ -64,7 +64,7 @@ export default function SweepDetail() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
-      <div className="text-sm font-mono text-muted-foreground mb-4">
+      <div className="text-sm text-muted-foreground mb-4">
         <Link href="/sweeps">
           <span className="flex items-center w-fit hover:text-foreground cursor-pointer transition-colors">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Sweeps
@@ -74,14 +74,14 @@ export default function SweepDetail() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
             <Zap className="w-8 h-8 text-primary" />
             {sweep.name}
           </h1>
           <div className="flex items-center gap-3 mt-2">
             <Badge
               variant="outline"
-              className={`font-mono text-xs ${
+              className={`text-xs ${
                 sweep.status === "completed"
                   ? "border-success text-success bg-success/10"
                   : sweep.status === "running"
@@ -93,7 +93,7 @@ export default function SweepDetail() {
               {sweep.status === "completed" && <CheckCircle2 className="w-3 h-3 mr-1" />}
               {sweep.status.toUpperCase()}
             </Badge>
-            <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {format(new Date(sweep.createdAt), "MMM d, yyyy h:mm a")}
             </span>
@@ -103,7 +103,7 @@ export default function SweepDetail() {
 
       <Card className="border-border bg-card">
         <CardContent className="p-6">
-          <div className="flex justify-between font-mono text-sm mb-2">
+          <div className="flex justify-between text-sm mb-2">
             <span className="text-muted-foreground">
               {sweep.completedExperiments} / {sweep.totalExperiments} experiments complete
             </span>
@@ -111,7 +111,7 @@ export default function SweepDetail() {
           </div>
           <Progress value={progress} className="h-2" />
           {bestExp && (
-            <div className="mt-4 text-xs font-mono text-muted-foreground flex items-center gap-2">
+            <div className="mt-4 text-xs text-muted-foreground flex items-center gap-2">
               <span className="text-primary">★ Best so far:</span>
               <span className="text-foreground truncate">{bestExp.name}</span>
               <span className="metric-green ml-auto shrink-0">
@@ -126,11 +126,11 @@ export default function SweepDetail() {
         <div className="grid grid-cols-3 gap-4">
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-[10px] font-mono uppercase text-muted-foreground mb-2">
+              <div className="text-[10px] text-muted-foreground mb-2 font-medium">
                 Best Faithfulness
               </div>
               <div
-                className={`text-2xl font-bold font-mono ${
+                className={`text-2xl font-semibold ${
                   bestExp.bestFaithfulness >= 0.8
                     ? "metric-green"
                     : bestExp.bestFaithfulness >= 0.5
@@ -144,11 +144,11 @@ export default function SweepDetail() {
           </Card>
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-[10px] font-mono uppercase text-muted-foreground mb-2">
+              <div className="text-[10px] text-muted-foreground mb-2 font-medium">
                 Best Context Recall
               </div>
               <div
-                className={`text-2xl font-bold font-mono ${
+                className={`text-2xl font-semibold ${
                   bestExp.bestContextRecall >= 0.8
                     ? "metric-green"
                     : bestExp.bestContextRecall >= 0.5
@@ -162,7 +162,7 @@ export default function SweepDetail() {
           </Card>
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-[10px] font-mono uppercase text-muted-foreground mb-2">
+              <div className="text-[10px] text-muted-foreground mb-2 font-medium">
                 Total Experiments
               </div>
               <div className="text-2xl font-bold font-mono text-foreground">
@@ -174,7 +174,7 @@ export default function SweepDetail() {
       )}
 
       <div>
-        <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-muted-foreground mb-4 pl-2 border-l-2 border-primary">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-4 pl-2 border-l-2 border-primary">
           Generated Experiments
         </h3>
         {!sweep.experiments?.length ? (

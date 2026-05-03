@@ -198,11 +198,11 @@ export default function Leaderboard() {
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-[9px] font-mono uppercase text-muted-foreground mb-1">
+                        <div className="text-[9px] text-muted-foreground mb-1 font-medium">
                           Recall
                         </div>
                         <div
-                          className={`font-mono font-bold text-base ${
+                          className={`font-semibold text-base ${
                             entry.bestContextRecall == null
                               ? "text-muted-foreground"
                               : entry.bestContextRecall >= 0.8
@@ -218,20 +218,20 @@ export default function Leaderboard() {
                         </div>
                       </div>
                       <div className="text-center hidden sm:block">
-                        <div className="text-[9px] font-mono uppercase text-muted-foreground mb-1">
+                        <div className="text-[9px] text-muted-foreground mb-1 font-medium">
                           Latency
                         </div>
-                        <div className="font-mono font-bold text-base text-foreground">
+                        <div className="font-semibold text-base text-foreground">
                           {entry.avgLatencyMs != null
                             ? `${Math.round(entry.avgLatencyMs)}ms`
                             : "-"}
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-[9px] font-mono uppercase text-muted-foreground mb-1">
+                        <div className="text-[9px] text-muted-foreground mb-1 font-medium">
                           Runs
                         </div>
-                        <div className="font-mono text-base text-muted-foreground">
+                        <div className="text-base text-muted-foreground">
                           {entry.runCount}
                         </div>
                       </div>

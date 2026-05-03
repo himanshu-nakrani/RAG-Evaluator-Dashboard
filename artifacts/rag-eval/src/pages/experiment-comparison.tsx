@@ -87,16 +87,16 @@ export default function ExperimentComparison() {
         <CardContent className="p-6">
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="font-mono text-xs uppercase text-muted-foreground tracking-widest">
+              <label className="text-xs font-medium text-muted-foreground">
                 Experiment A
               </label>
               <Select value={selectedExp1} onValueChange={setSelectedExp1} disabled={expsLoading}>
-                <SelectTrigger className="font-mono">
+                <SelectTrigger>
                   <SelectValue placeholder="Select experiment…" />
                 </SelectTrigger>
                 <SelectContent>
                   {experiments?.map((e: any) => (
-                    <SelectItem key={e.id} value={String(e.id)} className="font-mono text-sm">
+                    <SelectItem key={e.id} value={String(e.id)}>
                       {e.name}
                     </SelectItem>
                   ))}
@@ -104,16 +104,16 @@ export default function ExperimentComparison() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="font-mono text-xs uppercase text-muted-foreground tracking-widest">
+              <label className="text-xs font-medium text-muted-foreground">
                 Experiment B
               </label>
               <Select value={selectedExp2} onValueChange={setSelectedExp2} disabled={expsLoading}>
-                <SelectTrigger className="font-mono">
+                <SelectTrigger>
                   <SelectValue placeholder="Select experiment…" />
                 </SelectTrigger>
                 <SelectContent>
                   {experiments?.map((e: any) => (
-                    <SelectItem key={e.id} value={String(e.id)} className="font-mono text-sm">
+                    <SelectItem key={e.id} value={String(e.id)}>
                       {e.name}
                     </SelectItem>
                   ))}
@@ -149,7 +149,7 @@ export default function ExperimentComparison() {
                 <Card className="border-border bg-card h-full">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                      <CardTitle className="font-mono text-sm">{exp.name}</CardTitle>
+                      <CardTitle className="text-sm font-semibold">{exp.name}</CardTitle>
                       <Badge variant="secondary" className="font-mono text-[10px]">
                         {idx === 0 ? "A" : "B"}
                       </Badge>

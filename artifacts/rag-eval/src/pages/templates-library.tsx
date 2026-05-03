@@ -40,7 +40,7 @@ function TemplateCard({
     <Card className="border-border bg-card flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="font-mono text-sm flex items-center gap-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
             {template.isPreset ? (
               <Zap className="w-4 h-4 text-primary shrink-0" />
             ) : (
@@ -49,7 +49,7 @@ function TemplateCard({
             {template.name}
           </CardTitle>
           {template.isPreset && (
-            <Badge variant="secondary" className="font-mono text-[9px] shrink-0">
+            <Badge variant="secondary" className="text-[9px] shrink-0">
               Preset
             </Badge>
           )}
@@ -60,11 +60,11 @@ function TemplateCard({
           )}
         </div>
         {template.description && (
-          <p className="text-xs text-muted-foreground font-mono mt-1">{template.description}</p>
+          <p className="text-xs text-muted-foreground mt-1">{template.description}</p>
         )}
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-1 text-[10px] font-mono border border-border/50 rounded p-2 bg-muted/20">
+        <div className="grid grid-cols-2 gap-1 text-[10px] border border-border/50 rounded p-2 bg-muted/20">
           <div className="text-muted-foreground">Chunks</div>
           <div className="text-right">{template.chunkSizes.join(", ")}</div>
           <div className="text-muted-foreground">Models</div>
@@ -76,13 +76,13 @@ function TemplateCard({
           <div className="text-muted-foreground">Overlap</div>
           <div className="text-right">{template.chunkOverlap}</div>
         </div>
-        <div className="text-[10px] font-mono text-muted-foreground">
+        <div className="text-[10px] text-muted-foreground">
           {template.chunkSizes.length * template.embeddingModels.length * template.retrieverTypes.length} experiment combinations
         </div>
         <div className="flex gap-2 mt-auto">
           <Button
             size="sm"
-            className="flex-1 font-mono text-xs"
+            className="flex-1 text-xs"
             variant="outline"
             onClick={() => onUse(template)}
           >

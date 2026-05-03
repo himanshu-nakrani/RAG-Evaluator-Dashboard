@@ -57,36 +57,36 @@ export default function QuestionSets() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">Question Sets</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Question Sets</h1>
           <p className="text-muted-foreground mt-1">Curated test suites for evaluating retrieval and generation.</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="font-mono">
+            <Button>
               <Plus className="w-4 h-4 mr-2" /> New Set
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px] border-border bg-card">
             <DialogHeader>
-              <DialogTitle className="font-mono">Create Question Set</DialogTitle>
+              <DialogTitle>Create Question Set</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="font-mono text-xs uppercase text-muted-foreground">Name</Label>
+                <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">Name</Label>
                 <Input 
                   id="name" 
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
                   placeholder="e.g., Security Policy Q&A"
-                  className="bg-background font-mono"
+                  className="bg-background"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description" className="font-mono text-xs uppercase text-muted-foreground">Description (Optional)</Label>
+                <Label htmlFor="description" className="text-xs font-medium text-muted-foreground">Description (Optional)</Label>
                 <Textarea 
                   id="description" 
                   value={description} 

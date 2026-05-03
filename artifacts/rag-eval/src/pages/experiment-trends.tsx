@@ -37,7 +37,7 @@ export default function ExperimentTrends() {
 
   if (!data) {
     return (
-      <div className="text-center text-muted-foreground font-mono py-20">
+      <div className="text-center text-muted-foreground py-20">
         Experiment not found
       </div>
     );
@@ -52,7 +52,7 @@ export default function ExperimentTrends() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
-      <div className="flex items-center gap-4 text-sm font-mono text-muted-foreground mb-2">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
         <Link href={`/experiments/${expId}`}>
           <span className="flex items-center w-fit hover:text-foreground cursor-pointer transition-colors">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Experiment
@@ -61,11 +61,11 @@ export default function ExperimentTrends() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono flex items-center gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
           <TrendingUp className="w-8 h-8 text-primary" />
           {data.experimentName}
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm font-mono">
+        <p className="text-muted-foreground mt-1 text-sm">
           Metric trends across {data.trends?.length ?? 0} evaluation runs
         </p>
       </div>
@@ -74,7 +74,7 @@ export default function ExperimentTrends() {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-destructive/50 bg-destructive/5">
             <CardHeader className="pb-3">
-              <CardTitle className="font-mono text-sm flex items-center gap-2 uppercase tracking-widest text-destructive">
+              <CardTitle className="text-sm flex items-center gap-2 font-medium text-destructive">
                 <AlertTriangle className="w-4 h-4" />
                 {data.regressions.length} Regression{data.regressions.length > 1 ? "s" : ""} Detected
               </CardTitle>
@@ -90,10 +90,10 @@ export default function ExperimentTrends() {
                     className="flex items-center justify-between border border-destructive/30 rounded-lg p-3 bg-background/50"
                   >
                     <div>
-                      <div className="font-mono text-sm font-bold">
+                      <div className="text-sm font-semibold">
                         Run #{r.runNumber} — {r.metric}
                       </div>
-                      <div className="text-xs font-mono text-muted-foreground mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {Number(r.previousValue).toFixed(3)} → {Number(r.currentValue).toFixed(3)}
                       </div>
                     </div>

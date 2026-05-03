@@ -50,27 +50,27 @@ function ResultRow({ result }: { result: any }) {
         <div className="flex-1 min-w-0 pr-4">
           <div className="flex items-center gap-2 mb-1">
             {expanded ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
-            <span className="text-xs font-mono text-muted-foreground shrink-0">Q{result.questionId}</span>
+            <span className="text-xs text-muted-foreground shrink-0">Q{result.questionId}</span>
           </div>
           <p className="font-medium text-sm text-foreground pl-6 line-clamp-2">{result.questionText}</p>
         </div>
         
         <div className="flex gap-6 w-full md:w-auto pl-6 md:pl-0 pt-2 md:pt-0 border-t md:border-t-0 border-border/30">
           <div className="text-center w-20">
-            <div className="text-[10px] font-mono text-muted-foreground mb-1 uppercase">Faithful</div>
+            <div className="text-[10px] text-muted-foreground mb-1 font-medium">Faithful</div>
             <div className={`font-mono font-bold text-sm ${getScoreColor(result.faithfulness)}`}>
               {result.faithfulness != null ? result.faithfulness.toFixed(2) : '-'}
             </div>
           </div>
           <div className="text-center w-20">
-            <div className="text-[10px] font-mono text-muted-foreground mb-1 uppercase">Recall</div>
+            <div className="text-[10px] text-muted-foreground mb-1 font-medium">Recall</div>
             <div className={`font-mono font-bold text-sm ${getScoreColor(result.contextRecall)}`}>
               {result.contextRecall != null ? result.contextRecall.toFixed(2) : '-'}
             </div>
           </div>
           <div className="text-center w-16 hidden sm:block">
-            <div className="text-[10px] font-mono text-muted-foreground mb-1 uppercase">Time</div>
-            <div className="font-mono text-sm text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground mb-1 font-medium">Time</div>
+            <div className="text-sm text-muted-foreground">
               {result.latencyMs != null ? `${Math.round(result.latencyMs)}ms` : '-'}
             </div>
           </div>

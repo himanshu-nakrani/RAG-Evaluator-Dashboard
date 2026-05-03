@@ -82,7 +82,7 @@ export default function Documents() {
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="font-mono text-xs uppercase text-muted-foreground">Document Name</Label>
+                <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">Document Name</Label>
                 <Input 
                   id="name" 
                   value={name} 
@@ -93,13 +93,13 @@ export default function Documents() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="content" className="font-mono text-xs uppercase text-muted-foreground">Content</Label>
+                <Label htmlFor="content" className="text-xs font-medium text-muted-foreground">Content</Label>
                 <Textarea 
                   id="content" 
                   value={content} 
                   onChange={(e) => setContent(e.target.value)} 
                   placeholder="Paste document content here..."
-                  className="min-h-[300px] bg-background font-mono text-sm resize-none"
+                  className="min-h-[300px] bg-background text-sm resize-none"
                   required
                 />
               </div>
@@ -160,7 +160,7 @@ export default function Documents() {
                     {doc.content}
                   </p>
                 </CardContent>
-                <CardFooter className="pt-4 border-t border-border/50 text-xs font-mono text-muted-foreground flex justify-between">
+                <CardFooter className="pt-4 border-t border-border text-xs text-muted-foreground flex justify-between">
                   <span>{formatBytes(doc.sizeBytes)}</span>
                   <span>{format(new Date(doc.createdAt), 'MMM d, yyyy')}</span>
                 </CardFooter>

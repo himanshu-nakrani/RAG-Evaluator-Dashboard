@@ -262,7 +262,7 @@ export default function Experiments() {
                     </div>
                     
                     <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-border bg-background/30 p-5 flex flex-col justify-center">
-                      <div className="flex justify-between text-xs font-mono text-muted-foreground mb-1">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
                         <span>Best Faithfulness</span>
                         <span className={`font-bold ${
                           !exp.bestFaithfulness ? 'text-muted-foreground' :

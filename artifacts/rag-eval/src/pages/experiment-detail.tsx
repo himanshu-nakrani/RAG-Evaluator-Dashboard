@@ -60,7 +60,7 @@ export default function ExperimentDetail() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-12">
-      <div className="flex items-center gap-4 text-sm font-mono text-muted-foreground mb-4">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
         <Link href="/experiments">
           <span className="flex items-center hover:text-foreground cursor-pointer transition-colors">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Experiments
@@ -151,12 +151,12 @@ export default function ExperimentDetail() {
           )}
 
           <div>
-            <h3 className="text-lg font-mono font-bold text-foreground mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" /> Evaluation Runs
             </h3>
             
             {(!exp.runs || exp.runs.length === 0) ? (
-              <div className="text-center p-8 border border-dashed border-border rounded-lg bg-card/50 text-muted-foreground font-mono text-sm">
+              <div className="text-center p-8 border border-dashed border-border rounded-lg bg-card/50 text-muted-foreground text-sm">
                 No evaluation runs yet. Click "Run Evaluation" to start testing this pipeline.
               </div>
             ) : (
@@ -165,14 +165,14 @@ export default function ExperimentDetail() {
                   <Link key={run.id} href={`/eval-runs/${run.id}`}>
                     <div className="border border-border bg-card rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors flex flex-col md:flex-row md:items-center gap-4 hover-elevate">
                       <div className="w-full md:w-1/4">
-                        <div className="font-mono font-bold text-foreground flex items-center gap-2">
+                        <div className="font-semibold text-foreground flex items-center gap-2">
                           Run #{run.id}
                           {run.status === 'running' && <Activity className="w-3 h-3 text-warning animate-pulse" />}
                         </div>
-                        <div className="text-[10px] font-mono text-muted-foreground mt-1">
+                        <div className="text-[10px] text-muted-foreground mt-1">
                           {format(new Date(run.createdAt), 'MMM d, h:mm a')}
                         </div>
-                        <Badge variant="outline" className={`mt-2 font-mono text-[10px] ${
+                        <Badge variant="outline" className={`mt-2 text-[10px] ${
                           run.status === 'completed' ? 'border-success text-success bg-success/10' :
                           run.status === 'failed' ? 'border-destructive text-destructive bg-destructive/10' :
                           'border-warning text-warning bg-warning/10'
@@ -183,8 +183,8 @@ export default function ExperimentDetail() {
                       
                       <div className="flex-1 flex justify-around sm:justify-start sm:gap-12 border-t md:border-t-0 md:border-l border-border/50 pt-3 md:pt-0 md:pl-6">
                         <div className="text-center md:text-left">
-                          <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">Faithfulness</div>
-                          <div className={`font-mono font-bold text-lg ${
+                          <div className="text-[10px] text-muted-foreground mb-1 font-medium">Faithfulness</div>
+                          <div className={`font-semibold text-lg ${
                             run.status !== 'completed' ? 'text-muted-foreground' :
                             (run.avgFaithfulness || 0) >= 0.8 ? 'metric-green' :
                             (run.avgFaithfulness || 0) >= 0.5 ? 'metric-amber' : 'metric-red'
@@ -193,8 +193,8 @@ export default function ExperimentDetail() {
                           </div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">Context Recall</div>
-                          <div className={`font-mono font-bold text-lg ${
+                          <div className="text-[10px] text-muted-foreground mb-1 font-medium">Context Recall</div>
+                          <div className={`font-semibold text-lg ${
                             run.status !== 'completed' ? 'text-muted-foreground' :
                             (run.avgContextRecall || 0) >= 0.8 ? 'metric-green' :
                             (run.avgContextRecall || 0) >= 0.5 ? 'metric-amber' : 'metric-red'
