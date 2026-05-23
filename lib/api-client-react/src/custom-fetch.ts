@@ -17,6 +17,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _sessionIdGetter: (() => string | null) | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +43,15 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Register a getter that supplies a session ID (anonymous client UUID).
+ * When a non-null value is returned, an `X-Session-Id` header is attached to
+ * every request.
+ */
+export function setSessionIdGetter(getter: (() => string | null) | null): void {
+  _sessionIdGetter = getter;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -355,6 +365,15 @@ export async function customFetch<T = unknown>(
     const token = await _authTokenGetter();
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
+    }
+  }
+
+  // Attach anonymous session ID when configured and no X-Session-Id
+  // header has been explicitly provided.
+  if (_sessionIdGetter && !headers.has("x-session-id")) {
+    const sid = _sessionIdGetter();
+    if (sid) {
+      headers.set("x-session-id", sid);
     }
   }
 

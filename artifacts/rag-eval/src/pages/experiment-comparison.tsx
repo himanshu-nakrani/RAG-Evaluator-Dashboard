@@ -1,13 +1,16 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useCompareExperiments, useListExperiments } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Scale, TrendingUp, TrendingDown, Minus, Download, Trophy } from "lucide-react";
+import { Scale, TrendingUp, TrendingDown, Minus, Download, Trophy, Eye, EyeOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { HumanRatingPanel } from "@/components/blind/HumanRatingPanel";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar,
   ResponsiveContainer, Legend, Tooltip as RechartsTooltip,
@@ -69,13 +72,35 @@ export default function ExperimentComparison() {
     new Set(["bestFaithfulness", "bestContextRecall", "avgLatencyMs"])
   );
   const [view, setView] = useState<"cards" | "table">("cards");
+  const [isBlind, setIsBlind] = useState(() => {
+    const sp = new URLSearchParams(window.location.search);
+    return sp.get("blind") === "1";
+  });
+
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (isBlind) {
+      sp.set("blind", "1");
+    } else {
+      sp.delete("blind");
+    }
+    const qs = sp.toString();
+    const url = window.location.pathname + (qs ? `?${qs}` : "");
+    window.history.replaceState({}, "", url);
+  }, [isBlind]);
 
   const id1 = Number(selectedExp1);
   const id2 = Number(selectedExp2);
 
-  const { data: comparison, isLoading: compLoading } = useCompareExperiments(id1, id2, {
-    query: { enabled: !!id1 && !!id2 && id1 !== id2 },
-  });
+  const { data: comparison, isLoading: compLoading } = useCompareExperiments(
+    { id1, id2 },
+    {
+      query: {
+        queryKey: ["compareExperiments", id1, id2],
+        enabled: !!id1 && !!id2 && id1 !== id2,
+      },
+    },
+  );
 
   const toggleMetric = (key: string) => {
     setVisibleMetrics((prev) => {
@@ -130,30 +155,47 @@ export default function ExperimentComparison() {
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">Side-by-side experiment metrics comparison</p>
         </div>
-        {comparison && (
-          <div className="flex items-center gap-2">
-            {/* View toggle */}
-            <div className="flex gap-1 border border-border rounded-md p-0.5 bg-muted/30">
-              <button
-                onClick={() => setView("cards")}
-                aria-pressed={view === "cards"}
-                className={`px-3 py-1 text-xs rounded transition-colors ${view === "cards" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                Cards
-              </button>
-              <button
-                onClick={() => setView("table")}
-                aria-pressed={view === "table"}
-                className={`px-3 py-1 text-xs rounded transition-colors ${view === "table" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                Table
-              </button>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => exportComparisonCsv(comparison)} aria-label="Export comparison as CSV">
-              <Download className="w-4 h-4 mr-2" aria-hidden="true" /> Export CSV
-            </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Blind mode toggle */}
+          <div className="flex items-center gap-2 border border-border rounded-md px-3 py-1.5 bg-muted/20">
+            {isBlind ? (
+              <EyeOff className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
+            ) : (
+              <Eye className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+            )}
+            <Label htmlFor="blind-mode" className="text-xs cursor-pointer select-none">Blind</Label>
+            <Switch id="blind-mode" checked={isBlind} onCheckedChange={setIsBlind} />
           </div>
-        )}
+          {comparison && (
+            <div className="flex items-center gap-2">
+              {isBlind && (
+                <Button variant="default" size="sm" onClick={() => setIsBlind(false)}>
+                  Reveal
+                </Button>
+              )}
+              {/* View toggle */}
+              <div className="flex gap-1 border border-border rounded-md p-0.5 bg-muted/30">
+                <button
+                  onClick={() => setView("cards")}
+                  aria-pressed={view === "cards"}
+                  className={`px-3 py-1 text-xs rounded transition-colors ${view === "cards" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Cards
+                </button>
+                <button
+                  onClick={() => setView("table")}
+                  aria-pressed={view === "table"}
+                  className={`px-3 py-1 text-xs rounded transition-colors ${view === "table" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Table
+                </button>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => exportComparisonCsv(comparison)} aria-label="Export comparison as CSV">
+                <Download className="w-4 h-4 mr-2" aria-hidden="true" /> Export CSV
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Experiment selectors */}
@@ -205,8 +247,8 @@ export default function ExperimentComparison() {
         </div>
       ) : comparison ? (
         <>
-          {/* Winner banner */}
-          {exp1Wins !== exp2Wins && (
+          {/* Winner banner — hidden in blind mode */}
+          {!isBlind && exp1Wins !== exp2Wins && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="border-yellow-500/40 bg-yellow-500/5">
                 <CardContent className="p-4 flex items-center gap-3">
@@ -223,21 +265,23 @@ export default function ExperimentComparison() {
             </motion.div>
           )}
 
-          {/* Metric column selector */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="text-xs text-muted-foreground font-medium">Show metrics:</span>
-            {ALL_METRICS.map((m) => (
-              <label key={m.key} className="flex items-center gap-1.5 cursor-pointer">
-                <Checkbox
-                  checked={visibleMetrics.has(m.key)}
-                  onCheckedChange={() => toggleMetric(m.key)}
-                  className="h-3.5 w-3.5"
-                  aria-label={`Toggle ${m.label}`}
-                />
-                <span className="text-xs text-muted-foreground">{m.label}</span>
-              </label>
-            ))}
-          </div>
+          {/* Metric column selector — hidden in blind mode */}
+          {!isBlind && (
+            <div className="flex items-center gap-4 flex-wrap">
+              <span className="text-xs text-muted-foreground font-medium">Show metrics:</span>
+              {ALL_METRICS.map((m) => (
+                <label key={m.key} className="flex items-center gap-1.5 cursor-pointer">
+                  <Checkbox
+                    checked={visibleMetrics.has(m.key)}
+                    onCheckedChange={() => toggleMetric(m.key)}
+                    className="h-3.5 w-3.5"
+                    aria-label={`Toggle ${m.label}`}
+                  />
+                  <span className="text-xs text-muted-foreground">{m.label}</span>
+                </label>
+              ))}
+            </div>
+          )}
 
           {view === "cards" ? (
             <div className="grid grid-cols-2 gap-6">
@@ -251,9 +295,11 @@ export default function ExperimentComparison() {
                   <Card className="border-border bg-card h-full">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-sm font-semibold leading-tight">{exp.name}</CardTitle>
+                        <CardTitle className="text-sm font-semibold leading-tight">
+                          {isBlind ? `System ${idx === 0 ? "A" : "B"}` : exp.name}
+                        </CardTitle>
                         <div className="flex items-center gap-1 shrink-0">
-                          {exp1Wins !== exp2Wins && (
+                          {!isBlind && exp1Wins !== exp2Wins && (
                             (idx === 0 && exp1Wins > exp2Wins) || (idx === 1 && exp2Wins > exp1Wins)
                           ) && <Trophy className="w-3.5 h-3.5 text-yellow-500" aria-hidden="true" />}
                           <Badge variant="secondary" className="font-mono text-[10px]">{idx === 0 ? "A" : "B"}</Badge>
@@ -261,41 +307,54 @@ export default function ExperimentComparison() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Config */}
-                      <div className="grid grid-cols-2 gap-2 text-xs font-mono text-muted-foreground border border-border/50 rounded-lg p-3 bg-muted/20">
-                        <div><span className="opacity-60">Chunk</span><div className="text-foreground font-bold">{exp.chunkSize}</div></div>
-                        <div><span className="opacity-60">Top-K</span><div className="text-foreground font-bold">{exp.topK}</div></div>
-                        <div className="col-span-2"><span className="opacity-60">Retriever</span><div className="text-foreground font-bold">{exp.retrieverType}</div></div>
-                        <div className="col-span-2"><span className="opacity-60">Embedding</span><div className="text-foreground font-bold truncate">{exp.embeddingModel}</div></div>
-                      </div>
+                      {/* Config — hidden in blind mode */}
+                      {!isBlind && (
+                        <div className="grid grid-cols-2 gap-2 text-xs font-mono text-muted-foreground border border-border/50 rounded-lg p-3 bg-muted/20">
+                          <div><span className="opacity-60">Chunk</span><div className="text-foreground font-bold">{exp.chunkSize}</div></div>
+                          <div><span className="opacity-60">Top-K</span><div className="text-foreground font-bold">{exp.topK}</div></div>
+                          <div className="col-span-2"><span className="opacity-60">Retriever</span><div className="text-foreground font-bold">{exp.retrieverType}</div></div>
+                          <div className="col-span-2"><span className="opacity-60">Embedding</span><div className="text-foreground font-bold truncate">{exp.embeddingModel}</div></div>
+                        </div>
+                      )}
 
-                      {/* Metrics */}
-                      <div className="space-y-3">
-                        {ALL_METRICS.filter((m) => visibleMetrics.has(m.key)).map((m) => {
-                          const val = exp[m.key];
-                          const isWinner = winner[m.key] === (idx === 0 ? "exp1" : "exp2");
-                          const isTie = winner[m.key] === "tie";
-                          return (
-                            <div key={m.key} className={`flex items-center justify-between py-1 border-b border-border/30 last:border-0 ${isWinner ? "bg-success/5 -mx-1 px-1 rounded" : ""}`}>
-                              <span className="text-xs text-muted-foreground uppercase tracking-widest">{m.label}</span>
-                              <div className="flex items-center gap-1.5">
-                                {isWinner && !isTie && <Trophy className="w-3 h-3 text-yellow-500" aria-hidden="true" />}
-                                <span className={`text-lg font-bold ${
-                                  m.key === "bestFaithfulness" || m.key === "bestContextRecall"
-                                    ? (!val ? "text-muted-foreground" : val >= 0.8 ? "metric-green" : val >= 0.5 ? "metric-amber" : "metric-red")
-                                    : "text-foreground"
-                                }`}>
-                                  {val != null
-                                    ? (m.key === "avgLatencyMs" ? `${Math.round(val)}ms` :
-                                       m.key === "runCount" ? val :
-                                       val.toFixed(3))
-                                    : "—"}
-                                </span>
+                      {/* Human rating — shown in blind mode */}
+                      {isBlind && exp.latestRunId != null && (
+                        <HumanRatingPanel
+                          evalRunId={exp.latestRunId}
+                          questionId={0}
+                          label="Your rating"
+                        />
+                      )}
+
+                      {/* Metrics — hidden in blind mode */}
+                      {!isBlind && (
+                        <div className="space-y-3">
+                          {ALL_METRICS.filter((m) => visibleMetrics.has(m.key)).map((m) => {
+                            const val = exp[m.key];
+                            const isWinner = winner[m.key] === (idx === 0 ? "exp1" : "exp2");
+                            const isTie = winner[m.key] === "tie";
+                            return (
+                              <div key={m.key} className={`flex items-center justify-between py-1 border-b border-border/30 last:border-0 ${isWinner ? "bg-success/5 -mx-1 px-1 rounded" : ""}`}>
+                                <span className="text-xs text-muted-foreground uppercase tracking-widest">{m.label}</span>
+                                <div className="flex items-center gap-1.5">
+                                  {isWinner && !isTie && <Trophy className="w-3 h-3 text-yellow-500" aria-hidden="true" />}
+                                  <span className={`text-lg font-bold ${
+                                    m.key === "bestFaithfulness" || m.key === "bestContextRecall"
+                                      ? (!val ? "text-muted-foreground" : val >= 0.8 ? "metric-green" : val >= 0.5 ? "metric-amber" : "metric-red")
+                                      : "text-foreground"
+                                  }`}>
+                                    {val != null
+                                      ? (m.key === "avgLatencyMs" ? `${Math.round(val)}ms` :
+                                         m.key === "runCount" ? val :
+                                         val.toFixed(3))
+                                      : "—"}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -312,13 +371,13 @@ export default function ExperimentComparison() {
                       <th className="text-right p-4 text-xs font-medium">
                         <div className="flex items-center justify-end gap-1">
                           <Badge variant="secondary" className="text-[10px]">A</Badge>
-                          {comparison.exp1.name.length > 20 ? comparison.exp1.name.slice(0, 18) + "…" : comparison.exp1.name}
+                          {isBlind ? "System A" : comparison.exp1.name.length > 20 ? comparison.exp1.name.slice(0, 18) + "…" : comparison.exp1.name}
                         </div>
                       </th>
                       <th className="text-right p-4 text-xs font-medium">
                         <div className="flex items-center justify-end gap-1">
                           <Badge variant="secondary" className="text-[10px]">B</Badge>
-                          {comparison.exp2.name.length > 20 ? comparison.exp2.name.slice(0, 18) + "…" : comparison.exp2.name}
+                          {isBlind ? "System B" : comparison.exp2.name.length > 20 ? comparison.exp2.name.slice(0, 18) + "…" : comparison.exp2.name}
                         </div>
                       </th>
                       <th className="text-right p-4 text-xs font-medium text-muted-foreground">Δ (B−A)</th>
@@ -356,80 +415,84 @@ export default function ExperimentComparison() {
             </Card>
           )}
 
-          {/* Diff summary */}
-          <Card className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Difference (B − A)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-6">
-                <div className="text-center space-y-1">
-                  <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Faithfulness Δ</div>
-                  <DiffBadge diff={comparison.diff.faithfulnessDiff} />
+          {/* Diff summary — hidden in blind mode */}
+          {!isBlind && (
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Difference (B − A)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-center space-y-1">
+                    <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Faithfulness Δ</div>
+                    <DiffBadge diff={comparison.diff.faithfulnessDiff} />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Recall Δ</div>
+                    <DiffBadge diff={comparison.diff.recallDiff} />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Latency Δ</div>
+                    <DiffBadge diff={comparison.diff.latencyDiff} lowerIsBetter />
+                  </div>
                 </div>
-                <div className="text-center space-y-1">
-                  <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Recall Δ</div>
-                  <DiffBadge diff={comparison.diff.recallDiff} />
-                </div>
-                <div className="text-center space-y-1">
-                  <div className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Latency Δ</div>
-                  <DiffBadge diff={comparison.diff.latencyDiff} lowerIsBetter />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {radarData.length > 0 && (
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Performance Profile</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={radarData}>
-                      <PolarGrid stroke="hsl(var(--border))" />
-                      <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }} />
-                      <Radar name={comparison.exp1.name} dataKey="exp1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} />
-                      <Radar name={comparison.exp2.name} dataKey="exp2" stroke="#22c55e" fill="#22c55e" fillOpacity={0.2} />
-                      <Legend wrapperStyle={{ fontSize: "11px", fontFamily: "monospace" }} />
-                      <RechartsTooltip
-                        contentStyle={{ backgroundColor: "hsl(var(--popover))", borderColor: "hsl(var(--border))", fontFamily: "monospace", fontSize: "12px", borderRadius: "6px" }}
-                        formatter={(v: number) => `${v.toFixed(1)}%`}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            )}
+          {/* Charts — hidden in blind mode */}
+          {!isBlind && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {radarData.length > 0 && (
+                <Card className="border-border bg-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Performance Profile</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={radarData}>
+                        <PolarGrid stroke="hsl(var(--border))" />
+                        <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }} />
+                        <Radar name={comparison.exp1.name} dataKey="exp1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} />
+                        <Radar name={comparison.exp2.name} dataKey="exp2" stroke="#22c55e" fill="#22c55e" fillOpacity={0.2} />
+                        <Legend wrapperStyle={{ fontSize: "11px", fontFamily: "monospace" }} />
+                        <RechartsTooltip
+                          contentStyle={{ backgroundColor: "hsl(var(--popover))", borderColor: "hsl(var(--border))", fontFamily: "monospace", fontSize: "12px", borderRadius: "6px" }}
+                          formatter={(v: number) => `${v.toFixed(1)}%`}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
 
-            {barData.length > 0 && (
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Score Comparison</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={barData} margin={{ left: -20, right: 10, top: 5, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="metric" tick={{ fontSize: 10, fontFamily: "monospace" }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis domain={[0, 1]} tick={{ fontSize: 10, fontFamily: "monospace" }} stroke="hsl(var(--muted-foreground))" />
-                      <RechartsTooltip
-                        contentStyle={{ backgroundColor: "hsl(var(--popover))", borderColor: "hsl(var(--border))", fontFamily: "monospace", fontSize: "12px", borderRadius: "6px" }}
-                        formatter={(v: number) => v.toFixed(3)}
-                      />
-                      <Legend wrapperStyle={{ fontSize: "11px", fontFamily: "monospace" }} />
-                      <Bar name="Exp A" dataKey="A" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} opacity={0.85} />
-                      <Bar name="Exp B" dataKey="B" fill="#22c55e" radius={[3, 3, 0, 0]} opacity={0.85} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {barData.length > 0 && (
+                <Card className="border-border bg-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Score Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={barData} margin={{ left: -20, right: 10, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                        <XAxis dataKey="metric" tick={{ fontSize: 10, fontFamily: "monospace" }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis domain={[0, 1]} tick={{ fontSize: 10, fontFamily: "monospace" }} stroke="hsl(var(--muted-foreground))" />
+                        <RechartsTooltip
+                          contentStyle={{ backgroundColor: "hsl(var(--popover))", borderColor: "hsl(var(--border))", fontFamily: "monospace", fontSize: "12px", borderRadius: "6px" }}
+                          formatter={(v: number) => v.toFixed(3)}
+                        />
+                        <Legend wrapperStyle={{ fontSize: "11px", fontFamily: "monospace" }} />
+                        <Bar name="Exp A" dataKey="A" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} opacity={0.85} />
+                        <Bar name="Exp B" dataKey="B" fill="#22c55e" radius={[3, 3, 0, 0]} opacity={0.85} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
         </>
       ) : null}
     </motion.div>

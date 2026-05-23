@@ -3,3 +3,7 @@ export * from "./question-sets";
 export * from "./experiments";
 export * from "./sweeps";
 export * from "./templates";
+export * from "./human-ratings";
+export * from "./presets";
+export * from "./challenge-attempts";
+export * from "./arena-battles";

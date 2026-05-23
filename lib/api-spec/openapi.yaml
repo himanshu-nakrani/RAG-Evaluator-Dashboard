@@ -24,6 +24,20 @@ tags:
     description: Parameter sweep management
   - name: leaderboard
     description: Cross-experiment leaderboard
+  - name: templates
+    description: Reusable experiment configuration templates
+  - name: comparison
+    description: Side-by-side experiment comparison
+  - name: trends
+    description: Per-experiment metric trends over time
+  - name: human-ratings
+    description: Anonymous human ratings of eval-run answers
+  - name: presets
+    description: Curated document + question set scenarios
+  - name: challenge
+    description: Daily challenge mode with scoring
+  - name: arena
+    description: Side-by-side RAG system battles
 
 paths:
   /healthz:
@@ -334,11 +348,35 @@ paths:
               schema:
                 $ref: "#/components/schemas/DashboardSummary"
 
+  /experiments/compare:
+    get:
+      operationId: compareExperiments
+      tags: [comparison]
+      summary: Side-by-side comparison of two experiments
+      parameters:
+        - name: id1
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: id2
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Comparison result with both experiments + diff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperimentComparison"
+
   /experiments/{id}/compare:
     get:
       operationId: compareExperimentRuns
       tags: [experiments]
-      summary: Compare all runs within an experiment side by side
+      summary: Per-experiment, per-question comparison of all runs
       parameters:
         - name: id
           in: path
@@ -347,11 +385,11 @@ paths:
             type: integer
       responses:
         "200":
-          description: Comparison data
+          description: Per-question metrics across all runs of this experiment
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ExperimentComparison"
+                $ref: "#/components/schemas/ExperimentRunComparison"
 
   /leaderboard:
     get:
@@ -421,7 +459,7 @@ paths:
     post:
       operationId: importQuestions
       tags: [question-sets]
-      summary: Bulk import questions from CSV text (columns: text, ground_truth)
+      summary: "Bulk import questions from CSV text (columns: text, ground_truth)"
       parameters:
         - name: id
           in: path
@@ -441,6 +479,338 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportQuestionsResult"
+
+  /templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      summary: List all experiment configuration templates (presets + custom)
+      responses:
+        "200":
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Template"
+    post:
+      operationId: createTemplate
+      tags: [templates]
+      summary: Create a new custom template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTemplateBody"
+      responses:
+        "201":
+          description: Template created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+
+  /templates/{id}:
+    delete:
+      operationId: deleteTemplate
+      tags: [templates]
+      summary: Delete a template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+
+  /experiments/{id}/trends:
+    get:
+      operationId: getExperimentTrends
+      tags: [trends]
+      summary: Per-experiment metric trends across all runs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trends and detected regressions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperimentTrends"
+
+  /human-ratings:
+    get:
+      operationId: listHumanRatings
+      tags: [human-ratings]
+      summary: List ratings for an eval run from the current session
+      parameters:
+        - name: evalRunId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ratings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HumanRating"
+    post:
+      operationId: createHumanRating
+      tags: [human-ratings]
+      summary: Upsert a rating for a question in an eval run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHumanRatingBody"
+      responses:
+        "201":
+          description: Rating saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanRating"
+
+  /eval-runs/{id}/blind:
+    get:
+      operationId: getBlindEvalRun
+      tags: [eval-runs]
+      summary: Get per-question content for an eval run without metrics or config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Blind eval-run results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlindEvalRun"
+
+  /experiments/{id}/blind:
+    patch:
+      operationId: setExperimentBlind
+      tags: [experiments]
+      summary: Toggle blind mode on an experiment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetExperimentBlindBody"
+      responses:
+        "200":
+          description: Updated experiment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experiment"
+
+  /presets:
+    get:
+      operationId: listPresets
+      tags: [presets]
+      summary: List all available preset scenarios
+      responses:
+        "200":
+          description: List of presets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Preset"
+
+  /presets/{slug}:
+    get:
+      operationId: getPreset
+      tags: [presets]
+      summary: Get a preset by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Preset detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Preset"
+
+  /presets/{id}/use:
+    post:
+      operationId: usePreset
+      tags: [presets]
+      summary: Start an experiment + eval run using a preset's defaults
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsePresetBody"
+      responses:
+        "201":
+          description: Experiment and eval run created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsePresetResponse"
+
+  /challenge/today:
+    get:
+      operationId: getChallengeToday
+      tags: [challenge]
+      summary: Get today's challenge preset
+      responses:
+        "200":
+          description: Today's challenge info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeTodayResponse"
+
+  /challenge/today/start:
+    post:
+      operationId: startChallenge
+      tags: [challenge]
+      summary: Start today's challenge — creates experiment + eval run
+      responses:
+        "201":
+          description: Challenge attempt started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeAttempt"
+
+  /challenge/attempts:
+    get:
+      operationId: listChallengeAttempts
+      tags: [challenge]
+      summary: List challenge attempts for the current session
+      responses:
+        "200":
+          description: Challenge attempts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChallengeAttempt"
+
+  /arena/battles:
+    get:
+      operationId: listArenaBattles
+      tags: [arena]
+      summary: List arena battles for the current session
+      responses:
+        "200":
+          description: List of arena battles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArenaBattle"
+    post:
+      operationId: createArenaBattle
+      tags: [arena]
+      summary: Create a new arena battle between two RAG configurations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateArenaBattleBody"
+      responses:
+        "201":
+          description: Arena battle created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArenaBattle"
+
+  /arena/battles/{id}:
+    get:
+      operationId: getArenaBattle
+      tags: [arena]
+      summary: Get arena battle detail with both sides + blind results
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Arena battle detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArenaBattleDetail"
+
+  /arena/battles/{id}/finalize:
+    post:
+      operationId: finalizeArenaBattle
+      tags: [arena]
+      summary: Submit human verdict for an arena battle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinalizeArenaBattleBody"
+      responses:
+        "200":
+          description: Battle finalized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArenaBattle"
 
 components:
   schemas:
@@ -595,6 +965,8 @@ components:
         bestContextRecall:
           type: number
           nullable: true
+        isBlind:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -609,6 +981,7 @@ components:
         - documentId
         - questionSetId
         - runCount
+        - isBlind
         - createdAt
 
     ExperimentDetail:
@@ -632,6 +1005,16 @@ components:
           type: integer
         questionSetId:
           type: integer
+        isBlind:
+          type: boolean
+        runCount:
+          type: integer
+        bestFaithfulness:
+          type: number
+          nullable: true
+        bestContextRecall:
+          type: number
+          nullable: true
         runs:
           type: array
           items:
@@ -649,6 +1032,8 @@ components:
         - topK
         - documentId
         - questionSetId
+        - isBlind
+        - runCount
         - runs
         - createdAt
 
@@ -828,6 +1213,75 @@ components:
         - recentRuns
 
     ExperimentComparison:
+      type: object
+      properties:
+        exp1:
+          $ref: "#/components/schemas/ExperimentComparisonEntry"
+        exp2:
+          $ref: "#/components/schemas/ExperimentComparisonEntry"
+        diff:
+          type: object
+          properties:
+            faithfulnessDiff:
+              type: number
+              nullable: true
+            recallDiff:
+              type: number
+              nullable: true
+            latencyDiff:
+              type: number
+              nullable: true
+          required:
+            - faithfulnessDiff
+            - recallDiff
+            - latencyDiff
+      required:
+        - exp1
+        - exp2
+        - diff
+
+    ExperimentComparisonEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        chunkSize:
+          type: integer
+        embeddingModel:
+          type: string
+        retrieverType:
+          type: string
+        topK:
+          type: integer
+        isBlind:
+          type: boolean
+        latestRunId:
+          type: integer
+          nullable: true
+        bestFaithfulness:
+          type: number
+          nullable: true
+        bestContextRecall:
+          type: number
+          nullable: true
+        avgLatencyMs:
+          type: number
+          nullable: true
+        runCount:
+          type: integer
+      required:
+        - id
+        - name
+        - chunkSize
+        - embeddingModel
+        - retrieverType
+        - topK
+        - isBlind
+        - runCount
+
+    ExperimentRunComparison:
       type: object
       properties:
         experimentId:
@@ -1059,7 +1513,7 @@ components:
       properties:
         csvText:
           type: string
-          description: CSV content with headers. Recognized columns: text, question, ground_truth, answer
+          description: "CSV content with headers. Recognized columns: text, question, ground_truth, answer"
       required:
         - csvText
 
@@ -1083,3 +1537,490 @@ components:
         - skipped
         - errors
         - questions
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        chunkSizes:
+          type: array
+          items:
+            type: integer
+        embeddingModels:
+          type: array
+          items:
+            type: string
+        retrieverTypes:
+          type: array
+          items:
+            type: string
+        topK:
+          type: integer
+        chunkOverlap:
+          type: integer
+        isPreset:
+          type: boolean
+        category:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - chunkSizes
+        - embeddingModels
+        - retrieverTypes
+        - topK
+        - chunkOverlap
+        - isPreset
+        - createdAt
+        - updatedAt
+
+    CreateTemplateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        chunkSizes:
+          type: array
+          items:
+            type: integer
+        embeddingModels:
+          type: array
+          items:
+            type: string
+        retrieverTypes:
+          type: array
+          items:
+            type: string
+        topK:
+          type: integer
+        chunkOverlap:
+          type: integer
+        category:
+          type: string
+      required:
+        - name
+        - chunkSizes
+        - embeddingModels
+        - retrieverTypes
+        - topK
+
+    ExperimentTrends:
+      type: object
+      properties:
+        experimentId:
+          type: integer
+        experimentName:
+          type: string
+        trends:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExperimentTrendPoint"
+        regressions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExperimentRegression"
+      required:
+        - experimentId
+        - experimentName
+        - trends
+        - regressions
+
+    ExperimentTrendPoint:
+      type: object
+      properties:
+        runNumber:
+          type: integer
+        faithfulness:
+          type: number
+          nullable: true
+        contextRecall:
+          type: number
+          nullable: true
+        latencyMs:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - runNumber
+        - createdAt
+
+    ExperimentRegression:
+      type: object
+      properties:
+        runNumber:
+          type: integer
+        metric:
+          type: string
+        previousValue:
+          type: number
+        currentValue:
+          type: number
+        percentChange:
+          type: number
+        severity:
+          type: string
+          enum: [medium, high]
+      required:
+        - runNumber
+        - metric
+        - previousValue
+        - currentValue
+        - percentChange
+        - severity
+
+    HumanRating:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        evalRunId:
+          type: integer
+        questionId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        preference:
+          type: string
+          enum: [A, B, tie]
+          nullable: true
+        arenaBattleId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - sessionId
+        - evalRunId
+        - questionId
+        - rating
+        - createdAt
+
+    CreateHumanRatingBody:
+      type: object
+      properties:
+        evalRunId:
+          type: integer
+        questionId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        preference:
+          type: string
+          enum: [A, B, tie]
+        arenaBattleId:
+          type: integer
+      required:
+        - evalRunId
+        - questionId
+        - rating
+
+    BlindEvalRun:
+      type: object
+      properties:
+        runId:
+          type: integer
+        questionResults:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId:
+                type: integer
+              questionText:
+                type: string
+              retrievedContext:
+                type: string
+                nullable: true
+              generatedAnswer:
+                type: string
+                nullable: true
+            required:
+              - questionId
+              - questionText
+      required:
+        - runId
+        - questionResults
+
+    SetExperimentBlindBody:
+      type: object
+      properties:
+        isBlind:
+          type: boolean
+      required:
+        - isBlind
+
+    Preset:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        defaultChunkSize:
+          type: integer
+        defaultChunkOverlap:
+          type: integer
+        defaultEmbeddingModel:
+          type: string
+        defaultRetrieverType:
+          type: string
+        defaultTopK:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - name
+        - category
+        - documentId
+        - questionSetId
+        - defaultChunkSize
+        - defaultChunkOverlap
+        - defaultEmbeddingModel
+        - defaultRetrieverType
+        - defaultTopK
+        - createdAt
+
+    UsePresetBody:
+      type: object
+      properties:
+        name:
+          type: string
+
+    UsePresetResponse:
+      type: object
+      properties:
+        experimentId:
+          type: integer
+        evalRunId:
+          type: integer
+      required:
+        - experimentId
+        - evalRunId
+
+    ChallengeTodayResponse:
+      type: object
+      properties:
+        date:
+          type: string
+        preset:
+          $ref: "#/components/schemas/Preset"
+      required:
+        - date
+        - preset
+
+    ChallengeAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        presetId:
+          type: integer
+        experimentId:
+          type: integer
+        evalRunId:
+          type: integer
+        score:
+          type: integer
+          nullable: true
+        challengeDate:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - sessionId
+        - presetId
+        - experimentId
+        - evalRunId
+        - challengeDate
+        - createdAt
+
+    ExperimentConfig:
+      type: object
+      properties:
+        chunkSize:
+          type: integer
+        chunkOverlap:
+          type: integer
+        embeddingModel:
+          type: string
+        retrieverType:
+          type: string
+        topK:
+          type: integer
+      required:
+        - chunkSize
+        - chunkOverlap
+        - embeddingModel
+        - retrieverType
+        - topK
+
+    ArenaBattle:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sessionId:
+          type: string
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        experimentAId:
+          type: integer
+        experimentBId:
+          type: integer
+        evalRunAId:
+          type: integer
+          nullable: true
+        evalRunBId:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        metricWinner:
+          type: string
+          enum: [A, B, tie]
+          nullable: true
+        humanWinner:
+          type: string
+          enum: [A, B, tie]
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - name
+        - sessionId
+        - documentId
+        - questionSetId
+        - experimentAId
+        - experimentBId
+        - status
+        - createdAt
+
+    ArenaBattleDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        metricWinner:
+          type: string
+          enum: [A, B, tie]
+          nullable: true
+        humanWinner:
+          type: string
+          enum: [A, B, tie]
+          nullable: true
+        expA:
+          $ref: "#/components/schemas/ExperimentComparisonEntry"
+        expB:
+          $ref: "#/components/schemas/ExperimentComparisonEntry"
+        runABlind:
+          $ref: "#/components/schemas/BlindEvalRun"
+          nullable: true
+        runBBlind:
+          $ref: "#/components/schemas/BlindEvalRun"
+          nullable: true
+        humanRatings:
+          type: array
+          items:
+            $ref: "#/components/schemas/HumanRating"
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - name
+        - status
+        - expA
+        - expB
+        - humanRatings
+        - createdAt
+
+    CreateArenaBattleBody:
+      type: object
+      properties:
+        name:
+          type: string
+        documentId:
+          type: integer
+        questionSetId:
+          type: integer
+        configA:
+          $ref: "#/components/schemas/ExperimentConfig"
+        configB:
+          $ref: "#/components/schemas/ExperimentConfig"
+      required:
+        - name
+        - documentId
+        - questionSetId
+        - configA
+        - configB
+
+    FinalizeArenaBattleBody:
+      type: object
+      properties:
+        humanWinner:
+          type: string
+          enum: [A, B, tie]
+      required:
+        - humanWinner

@@ -75,6 +75,36 @@ router.get("/eval-runs/:id", async (req, res) => {
   }
 });
 
+// GET /eval-runs/:id/blind — get per-question content without metrics or config
+router.get("/eval-runs/:id/blind", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const [run] = await db.select().from(evalRunsTable).where(eq(evalRunsTable.id, id));
+    if (!run) {
+      res.status(404).json({ error: "Eval run not found" });
+      return;
+    }
+    const results = await db
+      .select({
+        questionId: evalResultsTable.questionId,
+        questionText: evalResultsTable.questionText,
+        retrievedContext: evalResultsTable.retrievedContext,
+        generatedAnswer: evalResultsTable.generatedAnswer,
+      })
+      .from(evalResultsTable)
+      .where(eq(evalResultsTable.evalRunId, id))
+      .orderBy(evalResultsTable.id);
+
+    res.json({
+      runId: run.id,
+      questionResults: results,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get blind eval run");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Simulates a realistic RAG evaluation with deterministic-ish metrics based on config
 export async function simulateEvalRun(
   runId: number,

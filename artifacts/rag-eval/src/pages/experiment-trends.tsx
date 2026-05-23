@@ -49,7 +49,7 @@ export default function ExperimentTrends() {
   const expId = Number(id);
 
   const { data, isLoading } = useGetExperimentTrends(expId, {
-    query: { enabled: !!expId, refetchInterval: 10000 },
+    query: { queryKey: ["getExperimentTrends", expId], enabled: !!expId, refetchInterval: 10000 },
   });
 
   const [chartType, setChartType] = useState<ChartType>("line");

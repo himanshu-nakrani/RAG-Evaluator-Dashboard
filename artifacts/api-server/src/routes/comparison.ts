@@ -1,9 +1,19 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { experimentsTable, evalRunsTable } from "@workspace/db";
-import { eq, max } from "drizzle-orm";
+import { eq, max, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
+
+async function getLatestRunId(experimentId: number): Promise<number | null> {
+  const [latest] = await db
+    .select({ id: evalRunsTable.id })
+    .from(evalRunsTable)
+    .where(eq(evalRunsTable.experimentId, experimentId))
+    .orderBy(desc(evalRunsTable.id))
+    .limit(1);
+  return latest?.id ?? null;
+}
 
 router.get("/experiments/compare", async (req, res) => {
   try {
@@ -47,6 +57,11 @@ router.get("/experiments/compare", async (req, res) => {
       .from(evalRunsTable)
       .where(eq(evalRunsTable.experimentId, id2));
 
+    const [latestRunId1, latestRunId2] = await Promise.all([
+      getLatestRunId(id1),
+      getLatestRunId(id2),
+    ]);
+
     const runCount1 = (
       await db
         .select()
@@ -69,6 +84,8 @@ router.get("/experiments/compare", async (req, res) => {
         embeddingModel: exp1.embeddingModel,
         retrieverType: exp1.retrieverType,
         topK: exp1.topK,
+        isBlind: exp1.isBlind,
+        latestRunId: latestRunId1,
         bestFaithfulness: metrics1?.bestFaithfulness ?? null,
         bestContextRecall: metrics1?.bestContextRecall ?? null,
         avgLatencyMs: metrics1?.avgLatencyMs ?? null,
@@ -81,6 +98,8 @@ router.get("/experiments/compare", async (req, res) => {
         embeddingModel: exp2.embeddingModel,
         retrieverType: exp2.retrieverType,
         topK: exp2.topK,
+        isBlind: exp2.isBlind,
+        latestRunId: latestRunId2,
         bestFaithfulness: metrics2?.bestFaithfulness ?? null,
         bestContextRecall: metrics2?.bestContextRecall ?? null,
         avgLatencyMs: metrics2?.avgLatencyMs ?? null,

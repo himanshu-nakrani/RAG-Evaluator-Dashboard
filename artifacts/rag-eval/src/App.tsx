@@ -19,6 +19,10 @@ import SweepDetail from "@/pages/sweep-detail";
 import ExperimentTrends from "@/pages/experiment-trends";
 import ExperimentComparison from "@/pages/experiment-comparison";
 import TemplatesLibrary from "@/pages/templates-library";
+import Presets from "@/pages/presets";
+import Challenge from "@/pages/challenge";
+import Arena from "@/pages/arena";
+import ArenaDetail from "@/pages/arena-detail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +50,10 @@ function Router() {
         <Route path="/sweeps" component={Sweeps} />
         <Route path="/sweeps/:id" component={SweepDetail} />
         <Route path="/templates" component={TemplatesLibrary} />
+        <Route path="/presets" component={Presets} />
+        <Route path="/challenge" component={Challenge} />
+        <Route path="/arena" component={Arena} />
+        <Route path="/arena/:id" component={ArenaDetail} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

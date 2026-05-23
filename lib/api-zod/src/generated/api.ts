@@ -134,6 +134,7 @@ export const ListExperimentsResponseItem = zod.object({
   runCount: zod.number(),
   bestFaithfulness: zod.number().nullish(),
   bestContextRecall: zod.number().nullish(),
+  isBlind: zod.boolean(),
   createdAt: zod.coerce.date(),
 });
 export const ListExperimentsResponse = zod.array(ListExperimentsResponseItem);
@@ -169,6 +170,10 @@ export const GetExperimentResponse = zod.object({
   topK: zod.number(),
   documentId: zod.number(),
   questionSetId: zod.number(),
+  isBlind: zod.boolean(),
+  runCount: zod.number(),
+  bestFaithfulness: zod.number().nullish(),
+  bestContextRecall: zod.number().nullish(),
   runs: zod.array(
     zod.object({
       id: zod.number(),
@@ -282,7 +287,51 @@ export const GetDashboardSummaryResponse = zod.object({
 });
 
 /**
- * @summary Compare all runs within an experiment side by side
+ * @summary Side-by-side comparison of two experiments
+ */
+export const CompareExperimentsQueryParams = zod.object({
+  id1: zod.coerce.number(),
+  id2: zod.coerce.number(),
+});
+
+export const CompareExperimentsResponse = zod.object({
+  exp1: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    chunkSize: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+    isBlind: zod.boolean(),
+    latestRunId: zod.number().nullish(),
+    bestFaithfulness: zod.number().nullish(),
+    bestContextRecall: zod.number().nullish(),
+    avgLatencyMs: zod.number().nullish(),
+    runCount: zod.number(),
+  }),
+  exp2: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    chunkSize: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+    isBlind: zod.boolean(),
+    latestRunId: zod.number().nullish(),
+    bestFaithfulness: zod.number().nullish(),
+    bestContextRecall: zod.number().nullish(),
+    avgLatencyMs: zod.number().nullish(),
+    runCount: zod.number(),
+  }),
+  diff: zod.object({
+    faithfulnessDiff: zod.number().nullable(),
+    recallDiff: zod.number().nullable(),
+    latencyDiff: zod.number().nullable(),
+  }),
+});
+
+/**
+ * @summary Per-experiment, per-question comparison of all runs
  */
 export const CompareExperimentRunsParams = zod.object({
   id: zod.coerce.number(),
@@ -319,7 +368,7 @@ export const CompareExperimentRunsResponse = zod.object({
 });
 
 /**
- * @summary Get leaderboard
+ * @summary Get ranked list of all experiments by performance metrics
  */
 export const GetLeaderboardResponse = zod.object({
   entries: zod.array(
@@ -342,23 +391,22 @@ export const GetLeaderboardResponse = zod.object({
 });
 
 /**
- * @summary List sweeps
+ * @summary List all parameter sweeps
  */
-export const ListSweepsResponse = zod.array(
-  zod.object({
-    id: zod.number(),
-    name: zod.string(),
-    documentId: zod.number(),
-    questionSetId: zod.number(),
-    status: zod.enum(["pending", "running", "completed"]),
-    totalExperiments: zod.number(),
-    completedExperiments: zod.number(),
-    createdAt: zod.coerce.date(),
-  }),
-);
+export const ListSweepsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  status: zod.enum(["pending", "running", "completed"]),
+  totalExperiments: zod.number(),
+  completedExperiments: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListSweepsResponse = zod.array(ListSweepsResponseItem);
 
 /**
- * @summary Create sweep
+ * @summary Create a parameter sweep generating multiple experiments
  */
 export const CreateSweepBody = zod.object({
   name: zod.string(),
@@ -373,40 +421,92 @@ export const CreateSweepBody = zod.object({
 });
 
 /**
- * @summary Get sweep
+ * @summary Get sweep detail with all generated experiments and their status
  */
-export const GetSweepParams = zod.object({ id: zod.coerce.number() });
+export const GetSweepParams = zod.object({
+  id: zod.coerce.number(),
+});
 
-/**
- * @summary Import questions from CSV
- */
-export const ImportQuestionsParams = zod.object({ id: zod.coerce.number() });
-
-export const ImportQuestionsBody = zod.object({
-  csvText: zod.string(),
+export const GetSweepResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  status: zod.enum(["pending", "running", "completed"]),
+  totalExperiments: zod.number(),
+  completedExperiments: zod.number(),
+  experiments: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      chunkSize: zod.number(),
+      chunkOverlap: zod.number(),
+      embeddingModel: zod.string(),
+      retrieverType: zod.string(),
+      topK: zod.number(),
+      documentId: zod.number(),
+      questionSetId: zod.number(),
+      runCount: zod.number(),
+      bestFaithfulness: zod.number().nullish(),
+      bestContextRecall: zod.number().nullish(),
+      isBlind: zod.boolean(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
 });
 
 /**
- * @summary Get experiment templates
+ * @summary Bulk import questions from CSV text (columns: text, ground_truth)
  */
-export const ListTemplatesResponse = zod.array(
-  zod.object({
-    id: zod.number(),
-    name: zod.string(),
-    description: zod.string().nullish(),
-    chunkSizes: zod.array(zod.number()),
-    embeddingModels: zod.array(zod.string()),
-    retrieverTypes: zod.array(zod.string()),
-    topK: zod.number(),
-    chunkOverlap: zod.number(),
-    isPreset: zod.boolean(),
-    category: zod.string().nullish(),
-    createdAt: zod.coerce.date(),
-  })
-);
+export const ImportQuestionsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ImportQuestionsBody = zod.object({
+  csvText: zod
+    .string()
+    .describe(
+      "CSV content with headers. Recognized columns: text, question, ground_truth, answer",
+    ),
+});
+
+export const ImportQuestionsResponse = zod.object({
+  imported: zod.number(),
+  skipped: zod.number(),
+  errors: zod.array(zod.string()),
+  questions: zod.array(
+    zod.object({
+      id: zod.number(),
+      questionSetId: zod.number(),
+      text: zod.string(),
+      groundTruth: zod.string().optional(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
 
 /**
- * @summary Create template
+ * @summary List all experiment configuration templates (presets + custom)
+ */
+export const ListTemplatesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  chunkSizes: zod.array(zod.number()),
+  embeddingModels: zod.array(zod.string()),
+  retrieverTypes: zod.array(zod.string()),
+  topK: zod.number(),
+  chunkOverlap: zod.number(),
+  isPreset: zod.boolean(),
+  category: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListTemplatesResponse = zod.array(ListTemplatesResponseItem);
+
+/**
+ * @summary Create a new custom template
  */
 export const CreateTemplateBody = zod.object({
   name: zod.string(),
@@ -420,74 +520,23 @@ export const CreateTemplateBody = zod.object({
 });
 
 /**
- * @summary Get leaderboard with filters
+ * @summary Delete a template
  */
-export const GetLeaderboardFiltersResponse = zod.object({
-  entries: zod.array(
-    zod.object({
-      rank: zod.number(),
-      experimentId: zod.number(),
-      experimentName: zod.string(),
-      chunkSize: zod.number(),
-      embeddingModel: zod.string(),
-      retrieverType: zod.string(),
-      topK: zod.number(),
-      runCount: zod.number(),
-      bestFaithfulness: zod.number().nullish(),
-      bestContextRecall: zod.number().nullish(),
-      avgLatencyMs: zod.number().nullish(),
-      latestRunStatus: zod.string().nullish(),
-      regressionDetected: zod.boolean().optional(),
-      regressionSeverity: zod.string().nullish().optional(),
-      tags: zod.array(zod.string()).optional(),
-    })
-  ),
-  sortedBy: zod.string(),
-  filters: zod.object({
-    chunkSizes: zod.array(zod.number()).optional(),
-    embeddingModels: zod.array(zod.string()).optional(),
-    retrieverTypes: zod.array(zod.string()).optional(),
-  }),
+export const DeleteTemplateParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteTemplateResponse = zod.object({
+  success: zod.boolean(),
 });
 
 /**
- * @summary Compare two experiments
+ * @summary Per-experiment metric trends across all runs
  */
-export const CompareExperimentsResponse = zod.object({
-  exp1: zod.object({
-    id: zod.number(),
-    name: zod.string(),
-    chunkSize: zod.number(),
-    embeddingModel: zod.string(),
-    retrieverType: zod.string(),
-    topK: zod.number(),
-    bestFaithfulness: zod.number().nullish(),
-    bestContextRecall: zod.number().nullish(),
-    avgLatencyMs: zod.number().nullish(),
-    runCount: zod.number(),
-  }),
-  exp2: zod.object({
-    id: zod.number(),
-    name: zod.string(),
-    chunkSize: zod.number(),
-    embeddingModel: zod.string(),
-    retrieverType: zod.string(),
-    topK: zod.number(),
-    bestFaithfulness: zod.number().nullish(),
-    bestContextRecall: zod.number().nullish(),
-    avgLatencyMs: zod.number().nullish(),
-    runCount: zod.number(),
-  }),
-  diff: zod.object({
-    faithfulnessDiff: zod.number().nullish(),
-    recallDiff: zod.number().nullish(),
-    latencyDiff: zod.number().nullish(),
-  }),
+export const GetExperimentTrendsParams = zod.object({
+  id: zod.coerce.number(),
 });
 
-/**
- * @summary Get experiment trends
- */
 export const GetExperimentTrendsResponse = zod.object({
   experimentId: zod.number(),
   experimentName: zod.string(),
@@ -498,7 +547,7 @@ export const GetExperimentTrendsResponse = zod.object({
       contextRecall: zod.number().nullish(),
       latencyMs: zod.number().nullish(),
       createdAt: zod.coerce.date(),
-    })
+    }),
   ),
   regressions: zod.array(
     zod.object({
@@ -507,7 +556,341 @@ export const GetExperimentTrendsResponse = zod.object({
       previousValue: zod.number(),
       currentValue: zod.number(),
       percentChange: zod.number(),
-      severity: zod.enum(["low", "medium", "high"]),
-    })
+      severity: zod.enum(["medium", "high"]),
+    }),
   ),
+});
+
+/**
+ * @summary List ratings for an eval run from the current session
+ */
+export const ListHumanRatingsQueryParams = zod.object({
+  evalRunId: zod.coerce.number(),
+});
+
+export const listHumanRatingsResponseRatingMax = 5;
+
+export const ListHumanRatingsResponseItem = zod.object({
+  id: zod.number(),
+  sessionId: zod.string(),
+  evalRunId: zod.number(),
+  questionId: zod.number(),
+  rating: zod.number().min(1).max(listHumanRatingsResponseRatingMax),
+  preference: zod.enum(["A", "B", "tie"]).nullish(),
+  arenaBattleId: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListHumanRatingsResponse = zod.array(ListHumanRatingsResponseItem);
+
+/**
+ * @summary Upsert a rating for a question in an eval run
+ */
+export const createHumanRatingBodyRatingMax = 5;
+
+export const CreateHumanRatingBody = zod.object({
+  evalRunId: zod.number(),
+  questionId: zod.number(),
+  rating: zod.number().min(1).max(createHumanRatingBodyRatingMax),
+  preference: zod.enum(["A", "B", "tie"]).optional(),
+  arenaBattleId: zod.number().optional(),
+});
+
+/**
+ * @summary Get per-question content for an eval run without metrics or config
+ */
+export const GetBlindEvalRunParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetBlindEvalRunResponse = zod.object({
+  runId: zod.number(),
+  questionResults: zod.array(
+    zod.object({
+      questionId: zod.number(),
+      questionText: zod.string(),
+      retrievedContext: zod.string().nullish(),
+      generatedAnswer: zod.string().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary Toggle blind mode on an experiment
+ */
+export const SetExperimentBlindParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SetExperimentBlindBody = zod.object({
+  isBlind: zod.boolean(),
+});
+
+export const SetExperimentBlindResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  chunkSize: zod.number(),
+  chunkOverlap: zod.number(),
+  embeddingModel: zod.string(),
+  retrieverType: zod.string(),
+  topK: zod.number(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  runCount: zod.number(),
+  bestFaithfulness: zod.number().nullish(),
+  bestContextRecall: zod.number().nullish(),
+  isBlind: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List all available preset scenarios
+ */
+export const ListPresetsResponseItem = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  defaultChunkSize: zod.number(),
+  defaultChunkOverlap: zod.number(),
+  defaultEmbeddingModel: zod.string(),
+  defaultRetrieverType: zod.string(),
+  defaultTopK: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListPresetsResponse = zod.array(ListPresetsResponseItem);
+
+/**
+ * @summary Get a preset by slug
+ */
+export const GetPresetParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetPresetResponse = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  defaultChunkSize: zod.number(),
+  defaultChunkOverlap: zod.number(),
+  defaultEmbeddingModel: zod.string(),
+  defaultRetrieverType: zod.string(),
+  defaultTopK: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Start an experiment + eval run using a preset's defaults
+ */
+export const UsePresetParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UsePresetBody = zod.object({
+  name: zod.string().optional(),
+});
+
+/**
+ * @summary Get today's challenge preset
+ */
+export const GetChallengeTodayResponse = zod.object({
+  date: zod.string(),
+  preset: zod.object({
+    id: zod.number(),
+    slug: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullish(),
+    category: zod.string(),
+    documentId: zod.number(),
+    questionSetId: zod.number(),
+    defaultChunkSize: zod.number(),
+    defaultChunkOverlap: zod.number(),
+    defaultEmbeddingModel: zod.string(),
+    defaultRetrieverType: zod.string(),
+    defaultTopK: zod.number(),
+    createdAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary List challenge attempts for the current session
+ */
+export const ListChallengeAttemptsResponseItem = zod.object({
+  id: zod.number(),
+  sessionId: zod.string(),
+  presetId: zod.number(),
+  experimentId: zod.number(),
+  evalRunId: zod.number(),
+  score: zod.number().nullish(),
+  challengeDate: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListChallengeAttemptsResponse = zod.array(
+  ListChallengeAttemptsResponseItem,
+);
+
+/**
+ * @summary List arena battles for the current session
+ */
+export const ListArenaBattlesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  sessionId: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  experimentAId: zod.number(),
+  experimentBId: zod.number(),
+  evalRunAId: zod.number().nullish(),
+  evalRunBId: zod.number().nullish(),
+  status: zod.enum(["pending", "running", "completed", "failed"]),
+  metricWinner: zod.enum(["A", "B", "tie"]).nullish(),
+  humanWinner: zod.enum(["A", "B", "tie"]).nullish(),
+  createdAt: zod.coerce.date(),
+  completedAt: zod.coerce.date().nullish(),
+});
+export const ListArenaBattlesResponse = zod.array(ListArenaBattlesResponseItem);
+
+/**
+ * @summary Create a new arena battle between two RAG configurations
+ */
+export const CreateArenaBattleBody = zod.object({
+  name: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  configA: zod.object({
+    chunkSize: zod.number(),
+    chunkOverlap: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+  }),
+  configB: zod.object({
+    chunkSize: zod.number(),
+    chunkOverlap: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+  }),
+});
+
+/**
+ * @summary Get arena battle detail with both sides + blind results
+ */
+export const GetArenaBattleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const getArenaBattleResponseHumanRatingsItemRatingMax = 5;
+
+export const GetArenaBattleResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  status: zod.string(),
+  metricWinner: zod.enum(["A", "B", "tie"]).nullish(),
+  humanWinner: zod.enum(["A", "B", "tie"]).nullish(),
+  expA: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    chunkSize: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+    isBlind: zod.boolean(),
+    latestRunId: zod.number().nullish(),
+    bestFaithfulness: zod.number().nullish(),
+    bestContextRecall: zod.number().nullish(),
+    avgLatencyMs: zod.number().nullish(),
+    runCount: zod.number(),
+  }),
+  expB: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    chunkSize: zod.number(),
+    embeddingModel: zod.string(),
+    retrieverType: zod.string(),
+    topK: zod.number(),
+    isBlind: zod.boolean(),
+    latestRunId: zod.number().nullish(),
+    bestFaithfulness: zod.number().nullish(),
+    bestContextRecall: zod.number().nullish(),
+    avgLatencyMs: zod.number().nullish(),
+    runCount: zod.number(),
+  }),
+  runABlind: zod
+    .object({
+      runId: zod.number(),
+      questionResults: zod.array(
+        zod.object({
+          questionId: zod.number(),
+          questionText: zod.string(),
+          retrievedContext: zod.string().nullish(),
+          generatedAnswer: zod.string().nullish(),
+        }),
+      ),
+    })
+    .nullish(),
+  runBBlind: zod
+    .object({
+      runId: zod.number(),
+      questionResults: zod.array(
+        zod.object({
+          questionId: zod.number(),
+          questionText: zod.string(),
+          retrievedContext: zod.string().nullish(),
+          generatedAnswer: zod.string().nullish(),
+        }),
+      ),
+    })
+    .nullish(),
+  humanRatings: zod.array(
+    zod.object({
+      id: zod.number(),
+      sessionId: zod.string(),
+      evalRunId: zod.number(),
+      questionId: zod.number(),
+      rating: zod
+        .number()
+        .min(1)
+        .max(getArenaBattleResponseHumanRatingsItemRatingMax),
+      preference: zod.enum(["A", "B", "tie"]).nullish(),
+      arenaBattleId: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  completedAt: zod.coerce.date().nullish(),
+});
+
+/**
+ * @summary Submit human verdict for an arena battle
+ */
+export const FinalizeArenaBattleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const FinalizeArenaBattleBody = zod.object({
+  humanWinner: zod.enum(["A", "B", "tie"]),
+});
+
+export const FinalizeArenaBattleResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  sessionId: zod.string(),
+  documentId: zod.number(),
+  questionSetId: zod.number(),
+  experimentAId: zod.number(),
+  experimentBId: zod.number(),
+  evalRunAId: zod.number().nullish(),
+  evalRunBId: zod.number().nullish(),
+  status: zod.enum(["pending", "running", "completed", "failed"]),
+  metricWinner: zod.enum(["A", "B", "tie"]).nullish(),
+  humanWinner: zod.enum(["A", "B", "tie"]).nullish(),
+  createdAt: zod.coerce.date(),
+  completedAt: zod.coerce.date().nullish(),
 });

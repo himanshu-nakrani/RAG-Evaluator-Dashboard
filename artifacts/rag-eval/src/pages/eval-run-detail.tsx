@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useGetEvalRun, getGetEvalRunQueryKey } from "@workspace/api-client-react";
+import { useGetEvalRun, getGetEvalRunQueryKey, useListChallengeAttempts } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import {
   ArrowLeft, Activity, CheckCircle2, XCircle, Clock,
-  ChevronDown, ChevronRight, AlertTriangle, Download, Search, X, SortAsc, Copy,
+  ChevronDown, ChevronRight, AlertTriangle, Download, Search, X, SortAsc, Copy, Trophy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -152,6 +152,13 @@ export default function EvalRunDetail() {
   const { id } = useParams();
   const runId = Number(id);
   const { toast } = useToast();
+
+  const challengeId = new URLSearchParams(window.location.search).get("challenge");
+  const { data: attempts } = useListChallengeAttempts();
+  const challengeAttempt = challengeId
+    ? (attempts ?? []).find((a) => a.id === Number(challengeId))
+    : null;
+
   const { data: run, isLoading } = useGetEvalRun(runId, {
     query: {
       enabled: !!runId,
@@ -270,6 +277,25 @@ export default function EvalRunDetail() {
             {run.completedAt && <span>Completed: {format(new Date(run.completedAt), "h:mm:ss a")}</span>}
           </div>
         </div>
+        {challengeAttempt && (
+          <Card className="border-amber-500/30 bg-amber-500/5">
+            <CardContent className="p-4 flex items-center gap-3">
+              <Trophy className="w-5 h-5 text-amber-500 shrink-0" aria-hidden="true" />
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  Daily Challenge — {challengeAttempt.challengeDate}
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {challengeAttempt.score != null ? (
+                    <span className="text-amber-400 font-bold text-base">{challengeAttempt.score}/100</span>
+                  ) : (
+                    <span>Evaluating…</span>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         {run.results && run.results.length > 0 && (
           <Button variant="outline" size="sm" className="shrink-0" onClick={() => exportRunCsv(run)} aria-label="Export run results as CSV">
             <Download className="w-4 h-4 mr-2" aria-hidden="true" /> Export CSV

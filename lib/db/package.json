@@ -18,8 +18,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.60.4",
     "@types/node": "catalog:",
     "@types/pg": "^8.18.0",
-    "drizzle-kit": "^0.31.9"
+    "drizzle-kit": "^0.31.9",
+    "lightningcss-darwin-arm64": "^1.32.0"
   }
 }

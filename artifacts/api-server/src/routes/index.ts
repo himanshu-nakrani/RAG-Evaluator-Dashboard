@@ -10,6 +10,10 @@ import sweepsRouter from "./sweeps";
 import comparisonRouter from "./comparison";
 import trendsRouter from "./trends";
 import templatesRouter from "./templates";
+import humanRatingsRouter from "./human-ratings";
+import presetsRouter from "./presets";
+import challengeRouter from "./challenge";
+import arenaRouter from "./arena";
 
 const router: IRouter = Router();
 
@@ -24,5 +28,9 @@ router.use(dashboardRouter);
 router.use(leaderboardRouter);
 router.use(sweepsRouter);
 router.use(templatesRouter);
+router.use(humanRatingsRouter);
+router.use(presetsRouter);
+router.use(challengeRouter);
+router.use(arenaRouter);
 
 export default router;

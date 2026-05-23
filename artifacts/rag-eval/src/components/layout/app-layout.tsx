@@ -9,6 +9,8 @@ import {
   Zap,
   BookMarked,
   Scale,
+  Swords,
+  Calendar,
   Moon,
   Sun,
   Keyboard,
@@ -31,6 +33,9 @@ const navigation = [
   { name: "Compare", href: "/experiments/compare", icon: Scale },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
   { name: "Templates", href: "/templates", icon: BookMarked },
+  { name: "Presets", href: "/presets", icon: BookMarked },
+  { name: "Challenge", href: "/challenge", icon: Calendar },
+  { name: "Arena", href: "/arena", icon: Swords },
 ];
 
 const SHORTCUTS = [

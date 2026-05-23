@@ -43,7 +43,7 @@ function TrendIndicator({ current, previous }: { current?: number | null; previo
 
 export default function Dashboard() {
   const { data: summary, isLoading } = useGetDashboardSummary({
-    query: { refetchInterval: 15000 },
+    query: { queryKey: ["getDashboardSummary"], refetchInterval: 15000 },
   });
   const [showAllRuns, setShowAllRuns] = useState(false);
 

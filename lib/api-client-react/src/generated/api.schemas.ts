@@ -69,6 +69,7 @@ export interface Experiment {
   runCount: number;
   bestFaithfulness?: number | null;
   bestContextRecall?: number | null;
+  isBlind: boolean;
   createdAt: string;
 }
 
@@ -103,6 +104,10 @@ export interface ExperimentDetail {
   topK: number;
   documentId: number;
   questionSetId: number;
+  isBlind: boolean;
+  runCount: number;
+  bestFaithfulness?: number | null;
+  bestContextRecall?: number | null;
   runs: EvalRun[];
   createdAt: string;
 }
@@ -168,7 +173,34 @@ export interface DashboardSummary {
   recentRuns: EvalRun[];
 }
 
-export type ExperimentComparisonRunsItem = {
+export type ExperimentComparisonDiff = {
+  faithfulnessDiff: number | null;
+  recallDiff: number | null;
+  latencyDiff: number | null;
+};
+
+export interface ExperimentComparisonEntry {
+  id: number;
+  name: string;
+  chunkSize: number;
+  embeddingModel: string;
+  retrieverType: string;
+  topK: number;
+  isBlind: boolean;
+  latestRunId?: number | null;
+  bestFaithfulness?: number | null;
+  bestContextRecall?: number | null;
+  avgLatencyMs?: number | null;
+  runCount: number;
+}
+
+export interface ExperimentComparison {
+  exp1: ExperimentComparisonEntry;
+  exp2: ExperimentComparisonEntry;
+  diff: ExperimentComparisonDiff;
+}
+
+export type ExperimentRunComparisonRunsItem = {
   runId: number;
   runNumber: number;
   status: string;
@@ -178,29 +210,25 @@ export type ExperimentComparisonRunsItem = {
   createdAt: string;
 };
 
-export type ExperimentComparisonMetricsByQuestionItemRunMetricsItem = {
+export type ExperimentRunComparisonMetricsByQuestionItemRunMetricsItem = {
   runId: number;
   faithfulness?: number | null;
   contextRecall?: number | null;
   latencyMs?: number | null;
 };
 
-export type ExperimentComparisonMetricsByQuestionItem = {
+export type ExperimentRunComparisonMetricsByQuestionItem = {
   questionId: number;
   questionText: string;
-  runMetrics: ExperimentComparisonMetricsByQuestionItemRunMetricsItem[];
+  runMetrics: ExperimentRunComparisonMetricsByQuestionItemRunMetricsItem[];
 };
 
-export interface ExperimentComparison {
+export interface ExperimentRunComparison {
   experimentId: number;
   experimentName: string;
-  runs: ExperimentComparisonRunsItem[];
-  metricsByQuestion: ExperimentComparisonMetricsByQuestionItem[];
+  runs: ExperimentRunComparisonRunsItem[];
+  metricsByQuestion: ExperimentRunComparisonMetricsByQuestionItem[];
 }
-
-export type ListEvalRunsParams = {
-  experimentId?: number;
-};
 
 export type LeaderboardEntriesItem = {
   rank: number;
@@ -241,12 +269,21 @@ export interface Sweep {
   createdAt: string;
 }
 
+export type SweepDetailStatus =
+  (typeof SweepDetailStatus)[keyof typeof SweepDetailStatus];
+
+export const SweepDetailStatus = {
+  pending: "pending",
+  running: "running",
+  completed: "completed",
+} as const;
+
 export interface SweepDetail {
   id: number;
   name: string;
   documentId: number;
   questionSetId: number;
-  status: SweepStatus;
+  status: SweepDetailStatus;
   totalExperiments: number;
   completedExperiments: number;
   experiments: Experiment[];
@@ -266,6 +303,7 @@ export interface CreateSweepBody {
 }
 
 export interface ImportQuestionsBody {
+  /** CSV content with headers. Recognized columns: text, question, ground_truth, answer */
   csvText: string;
 }
 
@@ -275,3 +313,292 @@ export interface ImportQuestionsResult {
   errors: string[];
   questions: Question[];
 }
+
+export interface Template {
+  id: number;
+  name: string;
+  description?: string | null;
+  chunkSizes: number[];
+  embeddingModels: string[];
+  retrieverTypes: string[];
+  topK: number;
+  chunkOverlap: number;
+  isPreset: boolean;
+  category?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTemplateBody {
+  name: string;
+  description?: string;
+  chunkSizes: number[];
+  embeddingModels: string[];
+  retrieverTypes: string[];
+  topK: number;
+  chunkOverlap?: number;
+  category?: string;
+}
+
+export interface ExperimentTrendPoint {
+  runNumber: number;
+  faithfulness?: number | null;
+  contextRecall?: number | null;
+  latencyMs?: number | null;
+  createdAt: string;
+}
+
+export type ExperimentRegressionSeverity =
+  (typeof ExperimentRegressionSeverity)[keyof typeof ExperimentRegressionSeverity];
+
+export const ExperimentRegressionSeverity = {
+  medium: "medium",
+  high: "high",
+} as const;
+
+export interface ExperimentRegression {
+  runNumber: number;
+  metric: string;
+  previousValue: number;
+  currentValue: number;
+  percentChange: number;
+  severity: ExperimentRegressionSeverity;
+}
+
+export interface ExperimentTrends {
+  experimentId: number;
+  experimentName: string;
+  trends: ExperimentTrendPoint[];
+  regressions: ExperimentRegression[];
+}
+
+export type HumanRatingPreference =
+  | (typeof HumanRatingPreference)[keyof typeof HumanRatingPreference]
+  | null;
+
+export const HumanRatingPreference = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export interface HumanRating {
+  id: number;
+  sessionId: string;
+  evalRunId: number;
+  questionId: number;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  rating: number;
+  preference?: HumanRatingPreference;
+  arenaBattleId?: number | null;
+  createdAt: string;
+}
+
+export type CreateHumanRatingBodyPreference =
+  (typeof CreateHumanRatingBodyPreference)[keyof typeof CreateHumanRatingBodyPreference];
+
+export const CreateHumanRatingBodyPreference = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export interface CreateHumanRatingBody {
+  evalRunId: number;
+  questionId: number;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  rating: number;
+  preference?: CreateHumanRatingBodyPreference;
+  arenaBattleId?: number;
+}
+
+export type BlindEvalRunQuestionResultsItem = {
+  questionId: number;
+  questionText: string;
+  retrievedContext?: string | null;
+  generatedAnswer?: string | null;
+};
+
+export interface BlindEvalRun {
+  runId: number;
+  questionResults: BlindEvalRunQuestionResultsItem[];
+}
+
+export interface SetExperimentBlindBody {
+  isBlind: boolean;
+}
+
+export interface Preset {
+  id: number;
+  slug: string;
+  name: string;
+  description?: string | null;
+  category: string;
+  documentId: number;
+  questionSetId: number;
+  defaultChunkSize: number;
+  defaultChunkOverlap: number;
+  defaultEmbeddingModel: string;
+  defaultRetrieverType: string;
+  defaultTopK: number;
+  createdAt: string;
+}
+
+export interface UsePresetBody {
+  name?: string;
+}
+
+export interface UsePresetResponse {
+  experimentId: number;
+  evalRunId: number;
+}
+
+export interface ChallengeTodayResponse {
+  date: string;
+  preset: Preset;
+}
+
+export interface ChallengeAttempt {
+  id: number;
+  sessionId: string;
+  presetId: number;
+  experimentId: number;
+  evalRunId: number;
+  score?: number | null;
+  challengeDate: string;
+  createdAt: string;
+}
+
+export interface ExperimentConfig {
+  chunkSize: number;
+  chunkOverlap: number;
+  embeddingModel: string;
+  retrieverType: string;
+  topK: number;
+}
+
+export type ArenaBattleStatus =
+  (typeof ArenaBattleStatus)[keyof typeof ArenaBattleStatus];
+
+export const ArenaBattleStatus = {
+  pending: "pending",
+  running: "running",
+  completed: "completed",
+  failed: "failed",
+} as const;
+
+export type ArenaBattleMetricWinner =
+  | (typeof ArenaBattleMetricWinner)[keyof typeof ArenaBattleMetricWinner]
+  | null;
+
+export const ArenaBattleMetricWinner = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export type ArenaBattleHumanWinner =
+  | (typeof ArenaBattleHumanWinner)[keyof typeof ArenaBattleHumanWinner]
+  | null;
+
+export const ArenaBattleHumanWinner = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export interface ArenaBattle {
+  id: number;
+  name: string;
+  sessionId: string;
+  documentId: number;
+  questionSetId: number;
+  experimentAId: number;
+  experimentBId: number;
+  evalRunAId?: number | null;
+  evalRunBId?: number | null;
+  status: ArenaBattleStatus;
+  metricWinner?: ArenaBattleMetricWinner;
+  humanWinner?: ArenaBattleHumanWinner;
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export type ArenaBattleDetailMetricWinner =
+  | (typeof ArenaBattleDetailMetricWinner)[keyof typeof ArenaBattleDetailMetricWinner]
+  | null;
+
+export const ArenaBattleDetailMetricWinner = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export type ArenaBattleDetailHumanWinner =
+  | (typeof ArenaBattleDetailHumanWinner)[keyof typeof ArenaBattleDetailHumanWinner]
+  | null;
+
+export const ArenaBattleDetailHumanWinner = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export interface ArenaBattleDetail {
+  id: number;
+  name: string;
+  status: string;
+  metricWinner?: ArenaBattleDetailMetricWinner;
+  humanWinner?: ArenaBattleDetailHumanWinner;
+  expA: ExperimentComparisonEntry;
+  expB: ExperimentComparisonEntry;
+  runABlind?: BlindEvalRun | null;
+  runBBlind?: BlindEvalRun | null;
+  humanRatings: HumanRating[];
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export interface CreateArenaBattleBody {
+  name: string;
+  documentId: number;
+  questionSetId: number;
+  configA: ExperimentConfig;
+  configB: ExperimentConfig;
+}
+
+export type FinalizeArenaBattleBodyHumanWinner =
+  (typeof FinalizeArenaBattleBodyHumanWinner)[keyof typeof FinalizeArenaBattleBodyHumanWinner];
+
+export const FinalizeArenaBattleBodyHumanWinner = {
+  A: "A",
+  B: "B",
+  tie: "tie",
+} as const;
+
+export interface FinalizeArenaBattleBody {
+  humanWinner: FinalizeArenaBattleBodyHumanWinner;
+}
+
+export type ListEvalRunsParams = {
+  experimentId?: number;
+};
+
+export type CompareExperimentsParams = {
+  id1: number;
+  id2: number;
+};
+
+export type DeleteTemplate200 = {
+  success: boolean;
+};
+
+export type ListHumanRatingsParams = {
+  evalRunId: number;
+};

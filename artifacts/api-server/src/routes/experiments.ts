@@ -66,9 +66,50 @@ router.get("/experiments/:id", async (req, res) => {
       .from(evalRunsTable)
       .where(eq(evalRunsTable.experimentId, id))
       .orderBy(evalRunsTable.createdAt);
-    res.json({ ...exp, runs });
+    const [stats] = await db
+      .select({
+        bestFaithfulness: max(evalRunsTable.avgFaithfulness),
+        bestContextRecall: max(evalRunsTable.avgContextRecall),
+      })
+      .from(evalRunsTable)
+      .where(eq(evalRunsTable.experimentId, id));
+    res.json({
+      ...exp,
+      runs,
+      runCount: runs.length,
+      bestFaithfulness: stats?.bestFaithfulness ?? null,
+      bestContextRecall: stats?.bestContextRecall ?? null,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to get experiment");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/experiments/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { isBlind } = req.body;
+
+    if (typeof isBlind !== "boolean") {
+      res.status(400).json({ error: "isBlind (boolean) is required" });
+      return;
+    }
+
+    const [updated] = await db
+      .update(experimentsTable)
+      .set({ isBlind })
+      .where(eq(experimentsTable.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Experiment not found" });
+      return;
+    }
+
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to update experiment");
     res.status(500).json({ error: "Internal server error" });
   }
 });

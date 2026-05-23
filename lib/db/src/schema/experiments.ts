@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, real, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, real, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { documentsTable } from "./documents";
@@ -15,6 +15,7 @@ export const experimentsTable = pgTable("experiments", {
   documentId: integer("document_id").references(() => documentsTable.id, { onDelete: "cascade" }).notNull(),
   questionSetId: integer("question_set_id").references(() => questionSetsTable.id, { onDelete: "cascade" }).notNull(),
   sweepId: integer("sweep_id"),
+  isBlind: boolean("is_blind").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
