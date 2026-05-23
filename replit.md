@@ -2,7 +2,7 @@
 
 ## Overview
 
-RAG Evaluation Dashboard — a developer tool for ML engineers to test retrieval pipelines. Upload documents, create question sets, configure experiments (chunk size, embedding model, retriever type), run evaluations, and visualize faithfulness, context recall, and latency metrics.
+RAGrade — a developer tool for ML engineers to test retrieval pipelines. Upload documents, create question sets, configure experiments (chunk size, embedding model, retriever type), run evaluations, and visualize faithfulness, context recall, and latency metrics.
 
 ## Stack
 
@@ -19,7 +19,7 @@ RAG Evaluation Dashboard — a developer tool for ML engineers to test retrieval
 
 ## Artifacts
 
-- **rag-eval** (`/`) — RAG Eval Dashboard frontend (React + Vite)
+- **rag-eval** (`/`) — RAGrade frontend (React + Vite)
 - **api-server** (`/api`) — Express API backend
 
 ## Key Commands

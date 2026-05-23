@@ -1,10 +1,10 @@
-# RAG Evaluator Dashboard
+# RAGrade
 
-A pnpm monorepo for building, running, and analyzing retrieval-augmented generation (RAG) evaluation workflows — with **blind evaluation**, **daily challenges**, and **arena battles**.
+RAG + grade — a pnpm monorepo for building, running, and analyzing retrieval-augmented generation (RAG) evaluation workflows — with **blind evaluation**, **daily challenges**, and **arena battles**.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
-│  RAG Evaluator Dashboard                                         │
+│  RAGrade                                                          │
 │                                                                  │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────┐   │
 │  │ 📄 Docs  │  │ ❓ Qs   │  │ ⚙️ Exps  │  │ 📊 Dashboard  │   │
